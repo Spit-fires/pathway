@@ -98,3 +98,51 @@ GitHub Actions are configured to automatically build artifacts on push:
 
 - **Android App**: Pushing to `/phone` builds a Debug APK (`app-debug.apk`).
 - **Desktop App**: Pushing to `/desktop` builds a static site zip (`desktop-build.zip`).
+
+## Creating Releases
+
+Releases are automatically created when you push a version tag. To create a new release:
+
+1. **Create a version tag** following semantic versioning (e.g., `v1.0.0`, `v1.2.3`):
+
+   ```bash
+   git tag v1.0.0
+   ```
+
+2. **Push the tag** to GitHub:
+
+   ```bash
+   git push origin v1.0.0
+   ```
+
+3. The release workflow will automatically:
+   - Build the Android APK (`app-debug.apk`)
+   - Build the Desktop static site (`desktop-build.zip`)
+   - Create a GitHub Release with auto-generated release notes from commits
+   - Attach both artifacts to the release for download
+
+### Release Artifacts
+
+Each release includes:
+
+| Artifact             | Description                                             |
+| -------------------- | ------------------------------------------------------- |
+| `app-debug.apk`      | Android Gateway application (install directly on phone) |
+| `desktop-build.zip`  | Desktop Dashboard static site (extract and host)        |
+
+### Quick Release Commands
+
+```bash
+# Create and push a new release
+git tag v1.0.0 && git push origin v1.0.0
+
+# Create a pre-release version
+git tag v1.0.0-beta.1 && git push origin v1.0.0-beta.1
+
+# List all existing tags
+git tag -l
+
+# Delete a tag locally and remotely (if needed)
+git tag -d v1.0.0
+git push origin --delete v1.0.0
+```

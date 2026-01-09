@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">pathway</string>
+    <string name="title_activity_main">pathway</string>
+    <string name="package_name">com.pathway.android</string>
+    <string name="custom_url_scheme">com.pathway.android</string>
+</resources>

@@ -1,0 +1,45 @@
+name: Desktop Release
+
+on:
+  push:
+    paths:
+      - "desktop/**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Desktop Static Site
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./desktop
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Zip Build Output
+        run: |
+          cd build
+          zip -r ../desktop-build.zip .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-build
+          path: desktop/desktop-build.zip

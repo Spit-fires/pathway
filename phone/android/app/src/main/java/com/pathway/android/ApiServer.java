@@ -29,6 +29,10 @@ public class ApiServer extends NanoHTTPD {
     private Context context;
     private LogCallback logCallback;
     private final ReentrantLock lock = new ReentrantLock();
+    
+    // Timeout constants for SMS sending (in seconds)
+    private static final int SMS_BASE_TIMEOUT_SECONDS = 15;
+    private static final int SMS_PER_PART_TIMEOUT_SECONDS = 5;
 
     public interface LogCallback {
         void log(String message);
@@ -217,16 +221,19 @@ public class ApiServer extends NanoHTTPD {
             // Use sendMultipartTextMessage for proper Unicode/multipart handling
             smsManager.sendMultipartTextMessage(number, null, parts, sentIntents, null);
             
-            boolean finished = latch.await(15 + (partCount * 5), TimeUnit.SECONDS);
+            boolean finished = latch.await(SMS_BASE_TIMEOUT_SECONDS + (partCount * SMS_PER_PART_TIMEOUT_SECONDS), TimeUnit.SECONDS);
             
             context.unregisterReceiver(sentReceiver);
             
             if (!finished) {
                 resultStatus.set("timeout");
                 log("SMS Timed out waiting for carrier response");
-            } else if (failCount.get() == 0) {
+            } else if (failCount.get() == 0 && successCount.get() == partCount) {
                 resultStatus.set("sent");
                 log("SMS Sent Successfully (" + successCount.get() + "/" + partCount + " parts)");
+            } else if (failCount.get() == 0 && successCount.get() < partCount) {
+                resultStatus.set("partial_timeout");
+                log("SMS Partial timeout (" + successCount.get() + "/" + partCount + " parts confirmed)");
             }
             
             String finalStatus = resultStatus.get();

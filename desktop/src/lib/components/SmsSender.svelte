@@ -23,8 +23,14 @@
 
     // Check if message contains non-GSM characters (Unicode like Bangla, Arabic, etc.)
     function hasUnicodeChars(text: string): boolean {
-        // GSM 7-bit character set (basic Latin + some special chars)
-        // If any character is outside this set, it requires UCS-2 encoding
+        // GSM 7-bit Basic Character Set (GSM 03.38)
+        // This regex matches all characters that can be encoded in GSM 7-bit:
+        // - Basic Latin letters (A-Z, a-z), digits (0-9)
+        // - GSM-specific symbols: @ £ $ ¥ è é ù ì ò Ç Ø ø Å å Δ _ Φ Γ Λ Ω Π Ψ Σ Θ Ξ Æ æ ß É ¡ Ä Ö Ñ Ü § ¿ ä ö ñ ü à
+        // - Common punctuation and symbols: space ! " # ¤ % & ' ( ) * + , - . / : ; < = > ?
+        // - GSM extension table chars (via escape \x1B): ^ { } [ ~ ] | € \x0C
+        // - Control chars: newline \n, carriage return \r
+        // Any character outside this set requires UCS-2 (Unicode) encoding
         const gsmRegex = /^[@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1BÆæßÉ !"#¤%&'()*+,\-./0-9:;<=>?¡A-ZÄÖÑܧ¿a-zäöñüà\x0C^{}\[~\]|€]*$/;
         return !gsmRegex.test(text);
     }

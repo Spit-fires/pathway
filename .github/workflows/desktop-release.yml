@@ -7,7 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  # Keep the static build for web deployment
+  build-static:
     name: Build Desktop Static Site
     runs-on: ubuntu-latest
     defaults:
@@ -43,3 +44,80 @@ jobs:
         with:
           name: desktop-build
           path: desktop/desktop-build.zip
+
+  # Build Tauri desktop executables
+  build-tauri:
+    name: Build Tauri Desktop App
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+
+    runs-on: ${{ matrix.platform }}
+    defaults:
+      run:
+        working-directory: ./desktop
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libgtk-3-dev
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Tauri App
+        run: pnpm exec tauri build --target ${{ matrix.target }}
+
+      - name: Upload Linux AppImage
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pathway-desktop-linux
+          path: desktop/src-tauri/target/${{ matrix.target }}/release/bundle/appimage/*.AppImage
+
+      - name: Upload Linux deb
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pathway-desktop-linux-deb
+          path: desktop/src-tauri/target/${{ matrix.target }}/release/bundle/deb/*.deb
+
+      - name: Upload Windows exe
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pathway-desktop-windows
+          path: desktop/src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
+
+      - name: Upload macOS dmg
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pathway-desktop-macos
+          path: desktop/src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg

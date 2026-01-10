@@ -10,6 +10,8 @@ jobs:
   build-static:
     name: Build Desktop Static Site
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./desktop
@@ -47,6 +49,8 @@ jobs:
   build-android:
     name: Build Desktop Android APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./desktop

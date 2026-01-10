@@ -108,12 +108,19 @@ jobs:
           name: pathway-desktop-linux-deb
           path: desktop/src-tauri/target/${{ matrix.target }}/release/bundle/deb/*.deb
 
-      - name: Upload Windows exe
+      - name: Upload Windows portable exe
         if: matrix.platform == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: pathway-desktop-windows
-          path: desktop/src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
+          name: pathway-desktop-windows-portable
+          path: desktop/src-tauri/target/${{ matrix.target }}/release/*.exe
+
+      - name: Upload Windows NSIS installer
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pathway-desktop-windows-installer
+          path: desktop/src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe
 
       - name: Upload macOS dmg
         if: matrix.platform == 'macos-latest'

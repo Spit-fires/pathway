@@ -27,7 +27,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["app", "dmg", "deb", "appimage", "nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -37,6 +37,12 @@
     ],
     "category": "Utility",
     "shortDescription": "Desktop Client for Pathway Android SMS Gateway",
-    "longDescription": "Pathway Desktop is a management dashboard for controlling Android SMS Gateway devices. Send SMS campaigns, view logs, and manage multiple devices."
+    "longDescription": "Pathway Desktop is a management dashboard for controlling Android SMS Gateway devices. Send SMS campaigns, view logs, and manage multiple devices.",
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "installMode": "currentUser"
+      }
+    }
   }
 }

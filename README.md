@@ -142,8 +142,8 @@ Each release includes:
 | `desktop-build.zip`               | Desktop Dashboard static site (extract and host)                 |
 | `pathway-desktop_*.AppImage`      | Linux portable executable (no installation required)             |
 | `pathway-desktop_*.deb`           | Linux Debian package                                             |
-| `Pathway Desktop_*.msi`           | Windows installer (MSI)                                          |
-| `Pathway Desktop_*.exe`           | Windows installer (NSIS)                                         |
+| `Pathway Desktop.exe`             | Windows portable executable (no installation required)           |
+| `Pathway Desktop_*-setup.exe`     | Windows installer (NSIS)                                         |
 | `Pathway Desktop_*.dmg`           | macOS disk image                                                 |
 
 ### Quick Release Commands

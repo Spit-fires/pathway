@@ -5,7 +5,7 @@ Pathway is a robust, self-hosted SMS and USSD Gateway solution that turns your A
 ## Project Structure
 
 - **`/phone`**: The Android Gateway application. Built with **SvelteKit** and **Capacitor**. It runs a local HTTP server on the device (`http://IP:8080`) to expose SMS sending and USSD execution capabilities to your network.
-- **`/desktop`**: The Management Dashboard. Built with **SvelteKit**. Connects to the gateway to send campaigns, view logs, and manage the system.
+- **`/desktop`**: The Management Dashboard. Built with **SvelteKit** and **Capacitor**. Available as both a static web application and native Android app. Connects to the gateway to send campaigns, view logs, and manage the system.
 
 ## Key Features
 
@@ -34,9 +34,9 @@ Pathway is a robust, self-hosted SMS and USSD Gateway solution that turns your A
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 22+
 - pnpm
-- Java 17 (for Android builds)
+- Java 17+ (for Android builds)
 
 ### 1. Android Gateway (`/phone`)
 
@@ -57,13 +57,30 @@ Once running on the phone:
 
 ### 2. Desktop Client (`/desktop`)
 
+#### Web Version (Static)
+
 ```bash
 cd desktop
 pnpm install
 
 # Start Development Server
 pnpm run dev
+
+# Build for production (static site)
+pnpm run build
 ```
+
+#### Android Version
+
+```bash
+cd desktop
+pnpm install
+
+# Run on Android Device (requires USB debugging)
+pnpm run dev:android
+```
+
+The desktop client can now run as a native Android app using Capacitor, in addition to the traditional static web build.
 
 ## API Usage
 
@@ -96,8 +113,9 @@ _Note: The API uses the app's globally configured "Preferred SIM"._
 
 GitHub Actions are configured to automatically build artifacts on push:
 
-- **Android App**: Pushing to `/phone` builds a Debug APK (`app-debug.apk`).
-- **Desktop App**: Pushing to `/desktop` builds a static site zip (`desktop-build.zip`).
+- **Phone Android App**: Pushing to `/phone` builds a Debug APK (`phone-app-debug.apk`).
+- **Desktop Static Site**: Pushing to `/desktop` builds a static site zip (`desktop-build.zip`).
+- **Desktop Android App**: Pushing to `/desktop` also builds an Android APK (`desktop-app-debug.apk`).
 
 ## Creating Releases
 
@@ -116,19 +134,21 @@ Releases are automatically created when you push a version tag. To create a new 
    ```
 
 3. The release workflow will automatically:
-   - Build the Android APK (`app-debug.apk`)
+   - Build the Phone Android APK (`phone-app-debug.apk`)
+   - Build the Desktop Android APK (`desktop-app-debug.apk`)
    - Build the Desktop static site (`desktop-build.zip`)
    - Create a GitHub Release with auto-generated release notes from commits
-   - Attach both artifacts to the release for download
+   - Attach all artifacts to the release for download
 
 ### Release Artifacts
 
 Each release includes:
 
-| Artifact             | Description                                             |
-| -------------------- | ------------------------------------------------------- |
-| `app-debug.apk`      | Android Gateway application (install directly on phone) |
-| `desktop-build.zip`  | Desktop Dashboard static site (extract and host)        |
+| Artifact                  | Description                                                     |
+| ------------------------- | --------------------------------------------------------------- |
+| `phone-app-debug.apk`     | Android Gateway application (install directly on phone)         |
+| `desktop-app-debug.apk`   | Desktop Dashboard Android app (install directly on phone)       |
+| `desktop-build.zip`       | Desktop Dashboard static site (extract and host)                |
 
 ### Quick Release Commands
 

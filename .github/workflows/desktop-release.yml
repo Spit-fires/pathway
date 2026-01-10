@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-static:
     name: Build Desktop Static Site
     runs-on: ubuntu-latest
     defaults:
@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -43,3 +43,50 @@ jobs:
         with:
           name: desktop-build
           path: desktop/desktop-build.zip
+
+  build-android:
+    name: Build Desktop Android APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./desktop
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Web Assets
+        run: pnpm run build
+
+      - name: Sync Capacitor
+        run: pnpm exec cap sync android
+
+      - name: Build Android APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-android-apk
+          path: desktop/android/app/build/outputs/apk/debug/app-debug.apk

@@ -13,7 +13,7 @@ on:
 
 jobs:
   build-android:
-    name: Build Android APK
+    name: Build Phone Android APK
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -61,7 +61,7 @@ jobs:
           name: android-apk
           path: phone/android/app/build/outputs/apk/debug/app-debug.apk
 
-  build-desktop:
+  build-desktop-static:
     name: Build Desktop Static Site
     runs-on: ubuntu-latest
     permissions:
@@ -76,7 +76,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -100,9 +100,58 @@ jobs:
           name: desktop-build
           path: desktop/desktop-build.zip
 
+  build-desktop-android:
+    name: Build Desktop Android APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./desktop
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Web Assets
+        run: pnpm run build
+
+      - name: Sync Capacitor
+        run: pnpm exec cap sync android
+
+      - name: Build Android APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-android-apk
+          path: desktop/android/app/build/outputs/apk/debug/app-debug.apk
+
   release:
     name: Create GitHub Release
-    needs: [build-android, build-desktop]
+    needs: [build-android, build-desktop-static, build-desktop-android]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -110,17 +159,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download Android APK
+      - name: Download Phone Android APK
         uses: actions/download-artifact@v4.1.8
         with:
           name: android-apk
-          path: ./artifacts
+          path: ./artifacts/phone
 
       - name: Download Desktop Build
         uses: actions/download-artifact@v4.1.8
         with:
           name: desktop-build
-          path: ./artifacts
+          path: ./artifacts/desktop
+
+      - name: Download Desktop Android APK
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: desktop-android-apk
+          path: ./artifacts/desktop-android
+
+      - name: Rename and Organize Artifacts
+        run: |
+          mv ./artifacts/phone/app-debug.apk ./artifacts/phone-app-debug.apk
+          mv ./artifacts/desktop-android/app-debug.apk ./artifacts/desktop-app-debug.apk
+          mv ./artifacts/desktop/desktop-build.zip ./artifacts/desktop-build.zip
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -129,7 +190,8 @@ jobs:
           name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
           generate_release_notes: true
           files: |
-            ./artifacts/app-debug.apk
+            ./artifacts/phone-app-debug.apk
+            ./artifacts/desktop-app-debug.apk
             ./artifacts/desktop-build.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

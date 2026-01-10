@@ -21,6 +21,35 @@
     // Since devices is a store, $devices works.
     let activeDevices = $derived($devices);
 
+    // Check if message contains non-GSM characters (Unicode like Bangla, Arabic, etc.)
+    function hasUnicodeChars(text: string): boolean {
+        // GSM 7-bit character set (basic Latin + some special chars)
+        // If any character is outside this set, it requires UCS-2 encoding
+        const gsmRegex = /^[@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1BÆæßÉ !"#¤%&'()*+,\-./0-9:;<=>?¡A-ZÄÖÑܧ¿a-zäöñüà\x0C^{}\[~\]|€]*$/;
+        return !gsmRegex.test(text);
+    }
+
+    // Calculate SMS parts based on message content
+    function calculateSmsParts(text: string): number {
+        if (!text || text.length === 0) return 0;
+        
+        const isUnicode = hasUnicodeChars(text);
+        
+        if (isUnicode) {
+            // UCS-2 encoding: 70 chars per single SMS, 67 per part in multipart
+            if (text.length <= 70) return 1;
+            return Math.ceil(text.length / 67);
+        } else {
+            // GSM 7-bit encoding: 160 chars per single SMS, 153 per part in multipart
+            if (text.length <= 160) return 1;
+            return Math.ceil(text.length / 153);
+        }
+    }
+
+    // Get encoding type for display
+    let encodingType = $derived(message && hasUnicodeChars(message) ? 'Unicode' : 'GSM');
+    let smsParts = $derived(calculateSmsParts(message));
+
     function toggleDevice(id: string) {
         if (selectedDeviceIds.includes(id)) {
             selectedDeviceIds = selectedDeviceIds.filter(d => d !== id);
@@ -94,8 +123,8 @@
                     <Label for="message">Message</Label>
                     <Textarea id="message" placeholder="Type your message here..." bind:value={message} class="min-h-[120px] bg-background/50 resize-y" />
                     <div class="flex justify-between text-xs text-muted-foreground">
-                        <span>{message.length} characters</span>
-                        <span>{Math.ceil(message.length / 160)} SMS parts</span>
+                        <span>{message.length} characters ({encodingType})</span>
+                        <span>{smsParts} SMS part{smsParts !== 1 ? 's' : ''}</span>
                     </div>
                 </div>
 

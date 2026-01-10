@@ -20,8 +20,26 @@ function cleanIp(ip: string): string {
 // Check if running in Tauri environment (Tauri 2.x compatible)
 function isTauri(): boolean {
     if (typeof window === 'undefined') return false;
-    // Check for Tauri 2.x internals
-    return '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
+    // Check for Tauri 2.x internals - this is the primary check
+    // @ts-expect-error - Tauri injects these globals
+    return !!(window.__TAURI_INTERNALS__ || window.__TAURI__);
+}
+
+// Try to get Tauri fetch, returns null if not available
+async function getTauriFetch(): Promise<((url: string, options?: RequestInit & { connectTimeout?: number }) => Promise<Response>) | null> {
+    if (!isTauri()) {
+        console.log('Not running in Tauri environment');
+        return null;
+    }
+    
+    try {
+        const httpModule = await import('@tauri-apps/plugin-http');
+        console.log('Tauri HTTP plugin loaded successfully');
+        return httpModule.fetch;
+    } catch (error) {
+        console.error('Failed to load Tauri HTTP plugin:', error);
+        return null;
+    }
 }
 
 // HTTP request helper that uses Tauri's HTTP plugin when available (bypasses CORS)
@@ -36,15 +54,19 @@ async function httpRequest<T>(
 ): Promise<{ ok: boolean; status: number; data?: T; error?: string }> {
     const timeout = options.timeout || 10000;
     
-    if (isTauri()) {
+    const tauriFetch = await getTauriFetch();
+    
+    if (tauriFetch) {
         try {
-            const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+            console.log(`Making Tauri HTTP request to: ${url}`);
             const response = await tauriFetch(url, {
                 method: options.method,
                 headers: options.headers,
                 body: options.body ? options.body : undefined,
                 connectTimeout: timeout,
-            });
+            } as RequestInit & { connectTimeout?: number });
+            
+            console.log(`Tauri HTTP response status: ${response.status}`);
             
             if (response.ok) {
                 const data = await response.json() as T;
@@ -54,10 +76,11 @@ async function httpRequest<T>(
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
             console.error('Tauri HTTP request failed:', error);
-            // Fall back to browser fetch if Tauri HTTP fails
-            return browserFetch<T>(url, options, timeout);
+            return { ok: false, status: 0, error: `Tauri HTTP failed: ${message}` };
         }
     } else {
+        // Use browser fetch as fallback (will have CORS issues for cross-origin requests)
+        console.log(`Using browser fetch for: ${url}`);
         return browserFetch<T>(url, options, timeout);
     }
 }
@@ -80,7 +103,8 @@ async function browserFetch<T>(
             method: options.method,
             headers: options.headers,
             body: options.body,
-            signal: controller.signal
+            signal: controller.signal,
+            mode: 'cors'
         });
         clearTimeout(timeoutId);
         
@@ -92,8 +116,9 @@ async function browserFetch<T>(
     } catch (error) {
         let message = error instanceof Error ? error.message : 'Unknown error';
         if (error instanceof TypeError) {
-            message = 'Connection failed (CORS or Network Error). Ensure the gateway device is reachable.';
+            message = 'Connection failed (CORS or Network Error). Ensure the gateway device is reachable and running.';
         }
+        console.error('Browser fetch failed:', error);
         return { ok: false, status: 0, error: message };
     }
 }

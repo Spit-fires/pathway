@@ -5,7 +5,7 @@ Pathway is a robust, self-hosted SMS and USSD Gateway solution that turns your A
 ## Project Structure
 
 - **`/phone`**: The Android Gateway application. Built with **SvelteKit** and **Capacitor**. It runs a local HTTP server on the device (`http://IP:8080`) to expose SMS sending and USSD execution capabilities to your network.
-- **`/desktop`**: The Management Dashboard. Built with **SvelteKit**. Connects to the gateway to send campaigns, view logs, and manage the system.
+- **`/desktop`**: The Management Dashboard. Built with **SvelteKit** and **Tauri**. Connects to the gateway to send campaigns, view logs, and manage the system. Available as native desktop apps (Windows, macOS, Linux) and as a static web build.
 
 ## Key Features
 
@@ -21,6 +21,7 @@ Pathway is a robust, self-hosted SMS and USSD Gateway solution that turns your A
 
 ### Desktop Dashboard (`/desktop`)
 
+- **Native Desktop Apps**: Built with Tauri for Windows, macOS, and Linux with no CORS restrictions.
 - **Multi-Device Support**: Connect and manage multiple Android phone gateways simultaneously.
 - **Real-time Status**: Automatic background polling shows you exactly which devices are `Online` or `Offline`.
 - **Smart SMS Distribution**:
@@ -36,7 +37,8 @@ Pathway is a robust, self-hosted SMS and USSD Gateway solution that turns your A
 
 - Node.js 20+
 - pnpm
-- Java 17 (for Android builds)
+- Java 17+ (for Android builds)
+- Rust (for Tauri desktop builds)
 
 ### 1. Android Gateway (`/phone`)
 
@@ -61,8 +63,14 @@ Once running on the phone:
 cd desktop
 pnpm install
 
-# Start Development Server
+# Start Development Server (web)
 pnpm run dev
+
+# Start Tauri Development (native desktop app)
+pnpm run tauri:dev
+
+# Build Tauri Desktop App
+pnpm run tauri:build
 ```
 
 ## API Usage
@@ -96,8 +104,10 @@ _Note: The API uses the app's globally configured "Preferred SIM"._
 
 GitHub Actions are configured to automatically build artifacts on push:
 
-- **Android App**: Pushing to `/phone` builds a Debug APK (`app-debug.apk`).
-- **Desktop App**: Pushing to `/desktop` builds a static site zip (`desktop-build.zip`).
+- **Android App**: Pushing to `/phone` builds a Debug APK (`app-debug.apk`) using Capacitor.
+- **Desktop App**: Pushing to `/desktop` builds:
+  - Static site zip (`desktop-build.zip`) for web hosting
+  - Native desktop executables for Windows (`.msi`, `.exe`), macOS (`.dmg`), and Linux (`.AppImage`, `.deb`) using Tauri
 
 ## Creating Releases
 
@@ -116,19 +126,25 @@ Releases are automatically created when you push a version tag. To create a new 
    ```
 
 3. The release workflow will automatically:
-   - Build the Android APK (`app-debug.apk`)
+   - Build the Android APK (`app-debug.apk`) from `/phone` using Capacitor
    - Build the Desktop static site (`desktop-build.zip`)
+   - Build native desktop apps for Windows, macOS, and Linux using Tauri
    - Create a GitHub Release with auto-generated release notes from commits
-   - Attach both artifacts to the release for download
+   - Attach all artifacts to the release for download
 
 ### Release Artifacts
 
 Each release includes:
 
-| Artifact             | Description                                             |
-| -------------------- | ------------------------------------------------------- |
-| `app-debug.apk`      | Android Gateway application (install directly on phone) |
-| `desktop-build.zip`  | Desktop Dashboard static site (extract and host)        |
+| Artifact                          | Description                                                      |
+| --------------------------------- | ---------------------------------------------------------------- |
+| `app-debug.apk`                   | Android Gateway application (install directly on phone)          |
+| `desktop-build.zip`               | Desktop Dashboard static site (extract and host)                 |
+| `pathway-desktop_*.AppImage`      | Linux portable executable (no installation required)             |
+| `pathway-desktop_*.deb`           | Linux Debian package                                             |
+| `Pathway Desktop.exe`             | Windows portable executable (no installation required)           |
+| `Pathway Desktop_*-setup.exe`     | Windows installer (NSIS)                                         |
+| `Pathway Desktop_*.dmg`           | macOS disk image                                                 |
 
 ### Quick Release Commands
 

@@ -40,7 +40,7 @@ jobs:
         run: pnpm run build
 
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: pnpm exec cap sync android
 
       - name: Build Android APK
         run: |

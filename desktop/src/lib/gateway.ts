@@ -17,9 +17,11 @@ function cleanIp(ip: string): string {
         .replace(/\/+$/, '');
 }
 
-// Check if running in Tauri environment
+// Check if running in Tauri environment (Tauri 2.x compatible)
 function isTauri(): boolean {
-    return typeof window !== 'undefined' && '__TAURI__' in window;
+    if (typeof window === 'undefined') return false;
+    // Check for Tauri 2.x internals
+    return '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
 }
 
 // HTTP request helper that uses Tauri's HTTP plugin when available (bypasses CORS)
@@ -36,8 +38,8 @@ async function httpRequest<T>(
     
     if (isTauri()) {
         try {
-            const { fetch } = await import('@tauri-apps/plugin-http');
-            const response = await fetch(url, {
+            const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+            const response = await tauriFetch(url, {
                 method: options.method,
                 headers: options.headers,
                 body: options.body ? options.body : undefined,
@@ -51,34 +53,48 @@ async function httpRequest<T>(
             return { ok: false, status: response.status, error: `HTTP ${response.status}` };
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
-            return { ok: false, status: 0, error: message };
+            console.error('Tauri HTTP request failed:', error);
+            // Fall back to browser fetch if Tauri HTTP fails
+            return browserFetch<T>(url, options, timeout);
         }
     } else {
-        // Fallback to browser fetch for development/static builds
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeout);
-            
-            const response = await fetch(url, {
-                method: options.method,
-                headers: options.headers,
-                body: options.body,
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-            
-            if (response.ok) {
-                const data = await response.json() as T;
-                return { ok: true, status: response.status, data };
-            }
-            return { ok: false, status: response.status, error: `HTTP ${response.status}` };
-        } catch (error) {
-            let message = error instanceof Error ? error.message : 'Unknown error';
-            if (error instanceof TypeError) {
-                message = 'Connection failed (CORS or Network Error). Use the Tauri desktop app for full functionality.';
-            }
-            return { ok: false, status: 0, error: message };
+        return browserFetch<T>(url, options, timeout);
+    }
+}
+
+// Browser fetch fallback
+async function browserFetch<T>(
+    url: string,
+    options: { 
+        method: string; 
+        headers?: Record<string, string>; 
+        body?: string;
+    },
+    timeout: number
+): Promise<{ ok: boolean; status: number; data?: T; error?: string }> {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        
+        const response = await fetch(url, {
+            method: options.method,
+            headers: options.headers,
+            body: options.body,
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+            const data = await response.json() as T;
+            return { ok: true, status: response.status, data };
         }
+        return { ok: false, status: response.status, error: `HTTP ${response.status}` };
+    } catch (error) {
+        let message = error instanceof Error ? error.message : 'Unknown error';
+        if (error instanceof TypeError) {
+            message = 'Connection failed (CORS or Network Error). Ensure the gateway device is reachable.';
+        }
+        return { ok: false, status: 0, error: message };
     }
 }
 

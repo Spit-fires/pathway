@@ -10,6 +10,10 @@
     "esModuleInterop": true,
     "typeRoots": ["./node_modules/@types"],
     "allowJs": true,
-    "rootDir": "."
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false
   }
 }

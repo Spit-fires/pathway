@@ -12,9 +12,12 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "eslint . && prettier --check .",
 		"format": "prettier --write .",
-		"pocketbase": ".\\pb\\pocketbase.exe serve"
+		"pocketbase": ".\\pb\\pocketbase.exe serve",
+		"dev:android": "vite build && pnpm exec cap sync && pnpm exec cap run android",
+		"build:android": "vite build && pnpm exec cap sync android && pnpm exec cap copy android"
 	},
 	"devDependencies": {
+		"@capacitor/cli": "^8.0.0",
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.39.1",
 		"@internationalized/date": "^3.10.1",
@@ -44,5 +47,11 @@
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.48.1",
 		"vite": "^7.2.6"
+	},
+	"dependencies": {
+		"@capacitor/android": "^8.0.0",
+		"@capacitor/core": "^8.0.0",
+		"@capacitor/device": "^8.0.0",
+		"@capacitor/preferences": "^8.0.0"
 	}
 }

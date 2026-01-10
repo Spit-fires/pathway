@@ -25,23 +25,6 @@ function isTauri(): boolean {
     return !!(window.__TAURI_INTERNALS__ || window.__TAURI__);
 }
 
-// Try to get Tauri fetch, returns null if not available
-async function getTauriFetch(): Promise<((url: string, options?: RequestInit & { connectTimeout?: number }) => Promise<Response>) | null> {
-    if (!isTauri()) {
-        console.log('Not running in Tauri environment');
-        return null;
-    }
-    
-    try {
-        const httpModule = await import('@tauri-apps/plugin-http');
-        console.log('Tauri HTTP plugin loaded successfully');
-        return httpModule.fetch;
-    } catch (error) {
-        console.error('Failed to load Tauri HTTP plugin:', error);
-        return null;
-    }
-}
-
 // HTTP request helper that uses Tauri's HTTP plugin when available (bypasses CORS)
 async function httpRequest<T>(
     url: string, 
@@ -54,33 +37,59 @@ async function httpRequest<T>(
 ): Promise<{ ok: boolean; status: number; data?: T; error?: string }> {
     const timeout = options.timeout || 10000;
     
-    const tauriFetch = await getTauriFetch();
-    
-    if (tauriFetch) {
+    if (isTauri()) {
         try {
-            console.log(`Making Tauri HTTP request to: ${url}`);
-            const response = await tauriFetch(url, {
+            console.log(`[Tauri] Loading HTTP plugin...`);
+            const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+            console.log(`[Tauri] Making request to: ${url}`);
+            
+            // Build fetch options compatible with Tauri HTTP plugin
+            const fetchOptions: RequestInit = {
                 method: options.method,
                 headers: options.headers,
-                body: options.body ? options.body : undefined,
-                connectTimeout: timeout,
-            } as RequestInit & { connectTimeout?: number });
+            };
             
-            console.log(`Tauri HTTP response status: ${response.status}`);
+            // Only add body for non-GET requests
+            if (options.method !== 'GET' && options.body) {
+                fetchOptions.body = options.body;
+            }
+            
+            const response = await tauriFetch(url, fetchOptions);
+            
+            console.log(`[Tauri] Response status: ${response.status}`);
             
             if (response.ok) {
-                const data = await response.json() as T;
-                return { ok: true, status: response.status, data };
+                const text = await response.text();
+                console.log(`[Tauri] Response body: ${text}`);
+                try {
+                    const data = JSON.parse(text) as T;
+                    return { ok: true, status: response.status, data };
+                } catch {
+                    // Response is not JSON, return as-is for status check
+                    return { ok: true, status: response.status };
+                }
             }
             return { ok: false, status: response.status, error: `HTTP ${response.status}` };
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Tauri HTTP request failed:', error);
-            return { ok: false, status: 0, error: `Tauri HTTP failed: ${message}` };
+        } catch (error: unknown) {
+            // Enhanced error logging
+            console.error('[Tauri] HTTP request failed:', error);
+            let message = 'Unknown error';
+            if (error instanceof Error) {
+                message = error.message;
+                console.error('[Tauri] Error name:', error.name);
+                console.error('[Tauri] Error stack:', error.stack);
+            } else if (typeof error === 'string') {
+                message = error;
+            } else if (error && typeof error === 'object') {
+                message = JSON.stringify(error);
+            }
+            
+            // Try browser fetch as fallback
+            console.log('[Tauri] Falling back to browser fetch...');
+            return browserFetch<T>(url, options, timeout);
         }
     } else {
-        // Use browser fetch as fallback (will have CORS issues for cross-origin requests)
-        console.log(`Using browser fetch for: ${url}`);
+        console.log(`[Browser] Making request to: ${url}`);
         return browserFetch<T>(url, options, timeout);
     }
 }
@@ -109,8 +118,13 @@ async function browserFetch<T>(
         clearTimeout(timeoutId);
         
         if (response.ok) {
-            const data = await response.json() as T;
-            return { ok: true, status: response.status, data };
+            const text = await response.text();
+            try {
+                const data = JSON.parse(text) as T;
+                return { ok: true, status: response.status, data };
+            } catch {
+                return { ok: true, status: response.status };
+            }
         }
         return { ok: false, status: response.status, error: `HTTP ${response.status}` };
     } catch (error) {
@@ -118,7 +132,7 @@ async function browserFetch<T>(
         if (error instanceof TypeError) {
             message = 'Connection failed (CORS or Network Error). Ensure the gateway device is reachable and running.';
         }
-        console.error('Browser fetch failed:', error);
+        console.error('[Browser] Fetch failed:', error);
         return { ok: false, status: 0, error: message };
     }
 }

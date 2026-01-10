@@ -14,9 +14,12 @@
 		"format": "prettier --write .",
 		"pocketbase": ".\\pb\\pocketbase.exe serve",
 		"dev:android": "vite build && pnpm exec cap sync && pnpm exec cap run android",
-		"build:android": "vite build && pnpm exec cap sync android && pnpm exec cap copy android"
+		"build:android": "vite build && pnpm exec cap sync android && pnpm exec cap copy android",
+		"dev:electron": "vite build && pnpm exec cap sync @capacitor-community/electron && pnpm exec cap open @capacitor-community/electron",
+		"build:electron": "vite build && pnpm exec cap sync @capacitor-community/electron && pnpm exec cap copy @capacitor-community/electron"
 	},
 	"devDependencies": {
+		"@capacitor-community/electron": "^5.0.1",
 		"@capacitor/cli": "^8.0.0",
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.39.1",

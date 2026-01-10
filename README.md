@@ -80,7 +80,25 @@ pnpm install
 pnpm run dev:android
 ```
 
-The desktop client can now run as a native Android app using Capacitor, in addition to the traditional static web build.
+#### Desktop Native (Electron)
+
+```bash
+cd desktop
+pnpm install
+
+# Build and open Electron app for development
+pnpm run dev:electron
+
+# Build production Electron executables
+pnpm run build:electron
+cd electron
+npm run electron:make  # Creates Windows .exe, Linux AppImage, etc.
+```
+
+The desktop client is available as:
+- **Static Web App** - Traditional web deployment
+- **Android Native App** - Using Capacitor for Android
+- **Desktop Native Apps** - Using Electron for Windows, Linux, and macOS
 
 ## API Usage
 
@@ -116,6 +134,7 @@ GitHub Actions are configured to automatically build artifacts on push:
 - **Phone Android App**: Pushing to `/phone` builds a Debug APK (`phone-app-debug.apk`).
 - **Desktop Static Site**: Pushing to `/desktop` builds a static site zip (`desktop-build.zip`).
 - **Desktop Android App**: Pushing to `/desktop` also builds an Android APK (`desktop-app-debug.apk`).
+- **Desktop Native Apps**: Pushing to `/desktop` builds Electron apps for Windows (.exe) and Linux (AppImage).
 
 ## Creating Releases
 
@@ -137,6 +156,7 @@ Releases are automatically created when you push a version tag. To create a new 
    - Build the Phone Android APK (`phone-app-debug.apk`)
    - Build the Desktop Android APK (`desktop-app-debug.apk`)
    - Build the Desktop static site (`desktop-build.zip`)
+   - Build the Desktop Electron apps (Windows .exe, Linux AppImage)
    - Create a GitHub Release with auto-generated release notes from commits
    - Attach all artifacts to the release for download
 
@@ -144,11 +164,13 @@ Releases are automatically created when you push a version tag. To create a new 
 
 Each release includes:
 
-| Artifact                  | Description                                                     |
-| ------------------------- | --------------------------------------------------------------- |
-| `phone-app-debug.apk`     | Android Gateway application (install directly on phone)         |
-| `desktop-app-debug.apk`   | Desktop Dashboard Android app (install directly on phone)       |
-| `desktop-build.zip`       | Desktop Dashboard static site (extract and host)                |
+| Artifact                            | Description                                                     |
+| ----------------------------------- | --------------------------------------------------------------- |
+| `phone-app-debug.apk`               | Android Gateway application (install directly on phone)         |
+| `desktop-app-debug.apk`             | Desktop Dashboard Android app (install directly on phone)       |
+| `desktop-build.zip`                 | Desktop Dashboard static site (extract and host)                |
+| `Pathway Desktop Setup *.exe`       | Windows desktop installer (NSIS)                                |
+| `Pathway Desktop-*.AppImage`        | Linux desktop application (AppImage)                            |
 
 ### Quick Release Commands
 

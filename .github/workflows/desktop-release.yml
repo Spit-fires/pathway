@@ -94,3 +94,103 @@ jobs:
         with:
           name: desktop-android-apk
           path: desktop/android/app/build/outputs/apk/debug/app-debug.apk
+
+  build-electron-windows:
+    name: Build Desktop Electron (Windows)
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./desktop
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Web Assets
+        run: pnpm run build
+
+      - name: Sync Capacitor Electron
+        run: pnpm exec cap sync "@capacitor-community/electron"
+
+      - name: Install Electron Dependencies
+        run: |
+          cd electron
+          npm install
+
+      - name: Build Electron App
+        run: |
+          cd electron
+          npm run build
+          npm run electron:make
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-electron-windows
+          path: desktop/electron/dist/*.exe
+
+  build-electron-linux:
+    name: Build Desktop Electron (Linux)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./desktop
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Web Assets
+        run: pnpm run build
+
+      - name: Sync Capacitor Electron
+        run: pnpm exec cap sync "@capacitor-community/electron"
+
+      - name: Install Electron Dependencies
+        run: |
+          cd electron
+          npm install
+
+      - name: Build Electron App
+        run: |
+          cd electron
+          npm run build
+          npm run electron:make
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-electron-linux
+          path: desktop/electron/dist/*.AppImage

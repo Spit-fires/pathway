@@ -26,7 +26,7 @@ export async function sendSms(device: Device, number: string, message: string): 
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${device.apiKey}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json; charset=utf-8'
             },
             body: JSON.stringify({ number, message }),
             signal: controller.signal
@@ -57,7 +57,7 @@ export async function runUssd(device: Device, code: string): Promise<UssdRespons
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${device.apiKey}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json; charset=utf-8'
             },
             body: JSON.stringify({ code }),
             signal: controller.signal

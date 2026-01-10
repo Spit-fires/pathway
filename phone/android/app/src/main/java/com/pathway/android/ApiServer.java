@@ -23,6 +23,9 @@ import org.json.JSONObject;
 import android.telephony.SubscriptionManager;
 import android.telephony.SubscriptionInfo;
 import java.util.List;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class ApiServer extends NanoHTTPD {
     private String apiKey;
@@ -94,10 +97,34 @@ public class ApiServer extends NanoHTTPD {
                     return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "Server busy");
                 }
                 
-                // Parse Body
-                Map<String, String> files = new HashMap<>();
-                session.parseBody(files);
-                String postBody = files.get("postData");
+                // Read request body with explicit UTF-8 encoding to properly handle Unicode (Bangla, etc.)
+                String contentLengthHeader = session.getHeaders().get("content-length");
+                int contentLength = contentLengthHeader != null ? Integer.parseInt(contentLengthHeader) : 0;
+                
+                String postBody;
+                if (contentLength > 0) {
+                    InputStream inputStream = session.getInputStream();
+                    ByteArrayOutputStream result = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    int totalRead = 0;
+                    while (totalRead < contentLength && (bytesRead = inputStream.read(buffer, 0, Math.min(buffer.length, contentLength - totalRead))) != -1) {
+                        result.write(buffer, 0, bytesRead);
+                        totalRead += bytesRead;
+                    }
+                    // Explicitly decode as UTF-8 to handle Bangla and other Unicode characters
+                    postBody = result.toString(StandardCharsets.UTF_8.name());
+                } else {
+                    // Fallback to parseBody for cases without content-length
+                    Map<String, String> files = new HashMap<>();
+                    session.parseBody(files);
+                    postBody = files.get("postData");
+                    // Re-encode to fix potential encoding issues
+                    if (postBody != null) {
+                        postBody = new String(postBody.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                    }
+                }
+                
                 JSONObject json = new JSONObject(postBody);
 
                 if ("/sms".equals(session.getUri())) {

@@ -85,7 +85,7 @@
             const res = await fetch(`http://127.0.0.1:${port}${endpoint}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json; charset=utf-8',
                     'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({ ...body })

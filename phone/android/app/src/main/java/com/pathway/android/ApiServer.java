@@ -13,20 +13,29 @@ import android.os.Looper;
 import android.os.Build;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.json.JSONObject;
 import android.telephony.SubscriptionManager;
 import android.telephony.SubscriptionInfo;
 import java.util.List;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class ApiServer extends NanoHTTPD {
     private String apiKey;
     private Context context;
     private LogCallback logCallback;
     private final ReentrantLock lock = new ReentrantLock();
+    
+    // Timeout constants for SMS sending (in seconds)
+    private static final int SMS_BASE_TIMEOUT_SECONDS = 15;
+    private static final int SMS_PER_PART_TIMEOUT_SECONDS = 5;
 
     public interface LogCallback {
         void log(String message);
@@ -88,10 +97,34 @@ public class ApiServer extends NanoHTTPD {
                     return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "Server busy");
                 }
                 
-                // Parse Body
-                Map<String, String> files = new HashMap<>();
-                session.parseBody(files);
-                String postBody = files.get("postData");
+                // Read request body with explicit UTF-8 encoding to properly handle Unicode (Bangla, etc.)
+                String contentLengthHeader = session.getHeaders().get("content-length");
+                int contentLength = contentLengthHeader != null ? Integer.parseInt(contentLengthHeader) : 0;
+                
+                String postBody;
+                if (contentLength > 0) {
+                    InputStream inputStream = session.getInputStream();
+                    ByteArrayOutputStream result = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    int totalRead = 0;
+                    while (totalRead < contentLength && (bytesRead = inputStream.read(buffer, 0, Math.min(buffer.length, contentLength - totalRead))) != -1) {
+                        result.write(buffer, 0, bytesRead);
+                        totalRead += bytesRead;
+                    }
+                    // Explicitly decode as UTF-8 to handle Bangla and other Unicode characters
+                    postBody = result.toString(StandardCharsets.UTF_8.name());
+                } else {
+                    // Fallback to parseBody for cases without content-length
+                    Map<String, String> files = new HashMap<>();
+                    session.parseBody(files);
+                    postBody = files.get("postData");
+                    // Re-encode to fix potential encoding issues
+                    if (postBody != null) {
+                        postBody = new String(postBody.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                    }
+                }
+                
                 JSONObject json = new JSONObject(postBody);
 
                 if ("/sms".equals(session.getUri())) {
@@ -124,47 +157,6 @@ public class ApiServer extends NanoHTTPD {
 
         log("Sending SMS to " + number + (simSlot != -1 ? " on SIM " + simSlot : ""));
         
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<String> resultStatus = new AtomicReference<>("unknown");
-        
-        String SENT = "SMS_SENT_" + System.currentTimeMillis();
-        PendingIntent sentPI = PendingIntent.getBroadcast(context, 0, new Intent(SENT), PendingIntent.FLAG_IMMUTABLE);
-
-        BroadcastReceiver sentReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context arg0, Intent arg1) {
-                switch (getResultCode()) {
-                    case android.app.Activity.RESULT_OK:
-                        resultStatus.set("sent");
-                        log("SMS Sent Successfully");
-                        break;
-                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                        resultStatus.set("generic_failure");
-                        log("SMS Generic Failure");
-                        break;
-                    case SmsManager.RESULT_ERROR_NO_SERVICE:
-                        resultStatus.set("no_service");
-                        log("SMS No Service");
-                        break;
-                    case SmsManager.RESULT_ERROR_NULL_PDU:
-                        resultStatus.set("null_pdu");
-                        log("SMS Null PDU");
-                        break;
-                    case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        resultStatus.set("radio_off");
-                        log("SMS Radio Off");
-                        break;
-                }
-                latch.countDown();
-            }
-        };
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-             context.registerReceiver(sentReceiver, new IntentFilter(SENT), Context.RECEIVER_EXPORTED);
-        } else {
-             context.registerReceiver(sentReceiver, new IntentFilter(SENT));
-        }
-
         try {
             SmsManager smsManager = SmsManager.getDefault();
             
@@ -183,11 +175,6 @@ public class ApiServer extends NanoHTTPD {
                                          break;
                                      }
                                  }
-                             } else {
-                                 // If no Sim specified but we are in this block, we could default to first? 
-                                 // But SmsManager.getDefault() handles default ID. 
-                                 // So only override if simSlot is specific found OR we want to be explicit.
-                                 // For now only override if subId found from slot.
                              }
                              
                              if (subId != -1) {
@@ -199,26 +186,92 @@ public class ApiServer extends NanoHTTPD {
                  }
             }
 
-            smsManager.sendTextMessage(number, null, message, sentPI, null);
+            // Use divideMessage to properly handle Unicode (Bangla, etc.) and long messages
+            // This automatically splits messages based on character encoding (GSM 7-bit or UCS-2)
+            ArrayList<String> parts = smsManager.divideMessage(message);
+            int partCount = parts.size();
+            log("Message divided into " + partCount + " part(s)");
             
-            boolean finished = latch.await(15, TimeUnit.SECONDS);
+            // Create pending intents for each part
+            String SENT = "SMS_SENT_" + System.currentTimeMillis();
+            ArrayList<PendingIntent> sentIntents = new ArrayList<>();
+            
+            CountDownLatch latch = new CountDownLatch(partCount);
+            AtomicReference<String> resultStatus = new AtomicReference<>("sent");
+            AtomicInteger successCount = new AtomicInteger(0);
+            AtomicInteger failCount = new AtomicInteger(0);
+            
+            BroadcastReceiver sentReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context arg0, Intent arg1) {
+                    switch (getResultCode()) {
+                        case android.app.Activity.RESULT_OK:
+                            successCount.incrementAndGet();
+                            break;
+                        case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                            failCount.incrementAndGet();
+                            resultStatus.set("generic_failure");
+                            log("SMS Generic Failure");
+                            break;
+                        case SmsManager.RESULT_ERROR_NO_SERVICE:
+                            failCount.incrementAndGet();
+                            resultStatus.set("no_service");
+                            log("SMS No Service");
+                            break;
+                        case SmsManager.RESULT_ERROR_NULL_PDU:
+                            failCount.incrementAndGet();
+                            resultStatus.set("null_pdu");
+                            log("SMS Null PDU");
+                            break;
+                        case SmsManager.RESULT_ERROR_RADIO_OFF:
+                            failCount.incrementAndGet();
+                            resultStatus.set("radio_off");
+                            log("SMS Radio Off");
+                            break;
+                    }
+                    latch.countDown();
+                }
+            };
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                 context.registerReceiver(sentReceiver, new IntentFilter(SENT), Context.RECEIVER_EXPORTED);
+            } else {
+                 context.registerReceiver(sentReceiver, new IntentFilter(SENT));
+            }
+            
+            // Create pending intents for each message part
+            for (int i = 0; i < partCount; i++) {
+                PendingIntent sentPI = PendingIntent.getBroadcast(context, i, new Intent(SENT), PendingIntent.FLAG_IMMUTABLE);
+                sentIntents.add(sentPI);
+            }
+            
+            // Use sendMultipartTextMessage for proper Unicode/multipart handling
+            smsManager.sendMultipartTextMessage(number, null, parts, sentIntents, null);
+            
+            boolean finished = latch.await(SMS_BASE_TIMEOUT_SECONDS + (partCount * SMS_PER_PART_TIMEOUT_SECONDS), TimeUnit.SECONDS);
+            
+            context.unregisterReceiver(sentReceiver);
+            
             if (!finished) {
                 resultStatus.set("timeout");
                 log("SMS Timed out waiting for carrier response");
+            } else if (failCount.get() == 0 && successCount.get() == partCount) {
+                resultStatus.set("sent");
+                log("SMS Sent Successfully (" + successCount.get() + "/" + partCount + " parts)");
+            } else if (failCount.get() == 0 && successCount.get() < partCount) {
+                resultStatus.set("partial_timeout");
+                log("SMS Partial timeout (" + successCount.get() + "/" + partCount + " parts confirmed)");
+            }
+            
+            String finalStatus = resultStatus.get();
+            if ("sent".equals(finalStatus)) {
+                 return newFixedLengthResponse(Response.Status.OK, "application/json", "{\"status\": \"sent\"}");
+            } else {
+                 return newFixedLengthResponse(Response.Status.OK, "application/json", "{\"status\": \"failed\", \"reason\": \"" + finalStatus + "\"}");
             }
         } catch (Exception e) {
-            resultStatus.set("error_" + e.getMessage());
             log("SMS Exception: " + e.getMessage());
-        } finally {
-            context.unregisterReceiver(sentReceiver);
-        }
-        
-        String finalStatus = resultStatus.get();
-        if ("sent".equals(finalStatus)) {
-             return newFixedLengthResponse(Response.Status.OK, "application/json", "{\"status\": \"sent\"}");
-        } else {
-             // Always return HTTP 200 - use JSON body for status indication
-             return newFixedLengthResponse(Response.Status.OK, "application/json", "{\"status\": \"failed\", \"reason\": \"" + finalStatus + "\"}");
+            return newFixedLengthResponse(Response.Status.OK, "application/json", "{\"status\": \"failed\", \"reason\": \"error_" + e.getMessage() + "\"}");
         }
     }
     

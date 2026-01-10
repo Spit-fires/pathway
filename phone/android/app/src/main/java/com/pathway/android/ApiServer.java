@@ -154,6 +154,12 @@ public class ApiServer extends NanoHTTPD {
         if (number.isEmpty() || message.isEmpty()) {
             return newFixedLengthResponse(Response.Status.OK, "application/json", "{\"status\": \"failed\", \"reason\": \"Missing number or message\"}");
         }
+        
+        // If no SIM specified in request, use global preference
+        if (simSlot == -1) {
+            android.content.SharedPreferences prefs = context.getSharedPreferences("GatewayConfig", Context.MODE_PRIVATE);
+            simSlot = prefs.getInt("preferred_sim", -1);
+        }
 
         log("Sending SMS to " + number + (simSlot != -1 ? " on SIM " + simSlot : ""));
         

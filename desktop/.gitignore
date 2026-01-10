@@ -1,9 +1,7 @@
 node_modules
 
 # Capacitor
-android
 ios
-electron
 
 # Output
 .output

@@ -1,7 +1,7 @@
 {
-  "name": "Pathway Desktop",
+  "name": "pathway-desktop",
   "version": "1.0.0",
-  "description": "An Amazing Capacitor App",
+  "description": "Pathway Desktop - SMS and USSD Gateway Management Dashboard",
   "author": {
     "name": "",
     "email": ""

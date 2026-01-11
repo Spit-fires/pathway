@@ -7,7 +7,8 @@
     import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
     import { Checkbox } from '$lib/components/ui/checkbox';
     import { Badge } from '$lib/components/ui/badge';
-    import { Send, Smartphone, Loader2, AlertCircle, CheckCircle } from '@lucide/svelte';
+    import { Progress } from '$lib/components/ui/progress';
+    import { Send, Smartphone, Loader2, AlertCircle, CheckCircle, Clock } from '@lucide/svelte';
     import { fly } from 'svelte/transition';
 
     let message = $state('');
@@ -15,6 +16,10 @@
     let selectedDeviceIds = $state<string[]>([]);
     let isSending = $state(false);
     let logs = $state<Array<{ device: string, number: string, status: 'sent' | 'failed', reason?: string, time: Date }>>([]);
+    let sentCount = $state(0);
+    let totalCount = $state(0);
+    let startTime = $state<number | null>(null);
+    let estimatedTimeRemaining = $state<string>('');
 
     // In Svelte 5, we can use a store with $ prefix or just follow it.
     // Since devices is a store, $devices works.
@@ -54,6 +59,13 @@
     // Get encoding type for display
     let encodingType = $derived(message && hasUnicodeChars(message) ? 'Unicode' : 'GSM');
     let smsParts = $derived(calculateSmsParts(message));
+    
+    // Calculate number count from the numbers field
+    let numberCount = $derived.by(() => {
+        if (!numbers || numbers.trim() === '') return 0;
+        const numberList = numbers.split(/[,\n\s]+/).map(n => n.trim()).filter(n => n);
+        return numberList.length;
+    });
 
     function toggleDevice(id: string) {
         if (selectedDeviceIds.includes(id)) {
@@ -75,8 +87,13 @@
         if (!message || !numbers || selectedDeviceIds.length === 0) return;
 
         isSending = true;
+        sentCount = 0;
+        startTime = Date.now();
+        estimatedTimeRemaining = 'Calculating...';
+        
         // Parse numbers: support comma, newline, or space separated
         const numberList = numbers.split(/[,\n\s]+/).map(n => n.trim()).filter(n => n);
+        totalCount = numberList.length;
         const targetDevices = activeDevices.filter(d => selectedDeviceIds.includes(d.id));
         
         let deviceIndex = 0;
@@ -108,8 +125,28 @@
                     time: new Date()
                 }, ...logs];
             }
+            
+            // Update progress and estimate
+            sentCount++;
+            
+            if (sentCount > 0 && startTime) {
+                const elapsedMs = Date.now() - startTime;
+                const avgTimePerSms = elapsedMs / sentCount;
+                const remainingSms = totalCount - sentCount;
+                const estimatedMs = remainingSms * avgTimePerSms;
+                
+                // Format estimated time
+                if (estimatedMs < 60000) {
+                    estimatedTimeRemaining = `${Math.ceil(estimatedMs / 1000)}s`;
+                } else {
+                    const minutes = Math.floor(estimatedMs / 60000);
+                    const seconds = Math.ceil((estimatedMs % 60000) / 1000);
+                    estimatedTimeRemaining = `${minutes}m ${seconds}s`;
+                }
+            }
         }
         isSending = false;
+        estimatedTimeRemaining = '';
     }
 </script>
 
@@ -127,7 +164,12 @@
                 <div class="space-y-2">
                     <Label for="numbers">Recipients (Phone Numbers)</Label>
                     <Textarea id="numbers" placeholder="+88017..., +88018..." bind:value={numbers} class="bg-background/50 font-mono min-h-[80px] resize-y" aria-describedby="numbers-help" />
-                    <p id="numbers-help" class="text-xs text-muted-foreground">Enter numbers separated by commas, spaces, or new lines</p>
+                    <div class="flex justify-between items-center text-xs text-muted-foreground">
+                        <p id="numbers-help">Enter numbers separated by commas, spaces, or new lines</p>
+                        {#if numberCount > 0}
+                            <Badge variant="secondary" class="font-mono">{numberCount} number{numberCount !== 1 ? 's' : ''}</Badge>
+                        {/if}
+                    </div>
                 </div>
 
                 <div class="space-y-2">
@@ -171,7 +213,24 @@
                     {/if}
                 </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter class="flex flex-col gap-4">
+                {#if isSending}
+                    <div class="w-full space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-muted-foreground flex items-center gap-1.5">
+                                <Loader2 class="w-3.5 h-3.5 animate-spin" />
+                                Sending {sentCount} of {totalCount}
+                            </span>
+                            {#if estimatedTimeRemaining}
+                                <span class="text-muted-foreground flex items-center gap-1.5">
+                                    <Clock class="w-3.5 h-3.5" />
+                                    {estimatedTimeRemaining} remaining
+                                </span>
+                            {/if}
+                        </div>
+                        <Progress value={sentCount} max={totalCount} class="h-2" />
+                    </div>
+                {/if}
                 <Button onclick={handleSend} disabled={isSending || !message || !numbers || selectedDeviceIds.length === 0} class="w-full font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
                     {#if isSending}
                         <Loader2 class="w-4 h-4 mr-2 animate-spin" />

@@ -94,7 +94,7 @@ Desktop Dashboard
        │
        ▼         ▼         ▼         ▼
    Update UI Status:
-   🟢 Online  🟢 Online  🔴 Offline  🟢 Online
+   [Online]  [Online]  [Offline]  [Online]
 ```
 
 ## Technology Stack

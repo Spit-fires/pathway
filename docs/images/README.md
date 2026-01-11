@@ -41,11 +41,11 @@ To further enhance the README, consider adding the following screenshots:
 4. Update README.md to include images:
 
 ```markdown
-### 📱 Android Gateway
+### Android Gateway
 
 ![Android Gateway](docs/images/phone-gateway.png)
 
-### 💻 Desktop Dashboard
+### Desktop Dashboard
 
 ![Desktop Dashboard](docs/images/desktop-dashboard.png)
 ```
@@ -61,11 +61,11 @@ To further enhance the README, consider adding the following screenshots:
 ## Current Status
 
 Currently using:
-- ✅ Emojis for visual hierarchy
-- ✅ Badges (Version, License, Build Status)
-- ✅ ASCII diagrams in ARCHITECTURE.md
-- ⏳ Real screenshots (to be added)
-- ⏳ Logo/banner image (to be added)
+- Clean, professional formatting without emojis
+- Badges (Version, License, Build Status)
+- ASCII diagrams in ARCHITECTURE.md
+- Real screenshots (to be added)
+- Logo/banner image (to be added)
 
 ## Next Steps
 

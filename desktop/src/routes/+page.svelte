@@ -8,6 +8,7 @@
     import { fly } from 'svelte/transition';
     import { onMount } from 'svelte';
     import { checkDeviceStatus } from '$lib/gateway';
+    import { version } from '../../package.json';
 
     onMount(() => {
         const interval = setInterval(async () => {
@@ -71,7 +72,7 @@
         </main>
         
         <footer class="pt-12 text-center text-sm text-muted-foreground">
-            <p>© 2026 Pathway Android Gateway. All rights reserved.</p>
+            <p>v{version} • © 2026 Pathway Android Gateway • <a href="https://fh.js.cool" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">fh.js.cool</a></p>
         </footer>
     </div>
     <Toaster />

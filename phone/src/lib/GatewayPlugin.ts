@@ -4,6 +4,14 @@ export interface PermissionStatus {
   [pluginPermission: string]: PermissionState;
 }
 
+export interface DeviceInfo {
+  manufacturer: string;
+  model: string;
+  brand: string;
+  device: string;
+  sdkVersion: number;
+}
+
 export interface GatewayPlugin {
   startServer(options: { port: number; apiKey: string }): Promise<{ success: boolean; message: string }>;
   stopServer(): Promise<{ success: boolean; message: string }>;
@@ -19,7 +27,13 @@ export interface GatewayPlugin {
   // Persistence & Lifecycle
   setKeepScreenOn(options: { on: boolean }): Promise<void>;
   exitApp(): Promise<void>;
-  requestBatteryOpt(): Promise<void>;
+  requestBatteryOpt(): Promise<{ status?: string } | void>;
+  
+  // OEM-specific battery settings (Realme, Xiaomi, OPPO, Samsung, etc.)
+  openOemBatterySettings(): Promise<{ manufacturer: string; opened: boolean; fallback?: boolean }>;
+  
+  // Device info
+  getDeviceInfo(): Promise<DeviceInfo>;
   
   // Events
   addListener(eventName: 'log', listenerFunc: (data: { message: string }) => void): Promise<PluginListenerHandle> & PluginListenerHandle;

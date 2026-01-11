@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { devices, type Device } from '$lib/stores';
+    import { devices, smsCounters, resetSmsCounter, type Device } from '$lib/stores';
     import { Button } from '$lib/components/ui/button';
     import { Input } from '$lib/components/ui/input';
     import { Label } from '$lib/components/ui/label';
     import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
     import { Badge } from '$lib/components/ui/badge';
-    import { Trash2, Plus, Smartphone, CheckCircle2, XCircle, Wifi } from '@lucide/svelte';
+    import { Trash2, Plus, Smartphone, CheckCircle2, XCircle, Wifi, RotateCcw, MessageSquare } from '@lucide/svelte';
     import { fly, scale } from 'svelte/transition';
 
     import { toast } from 'svelte-sonner';
@@ -102,7 +102,7 @@
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div class="flex items-center gap-2 mt-2">
+                        <div class="flex items-center justify-between gap-2 mt-2">
                             <Badge variant={device.status === 'online' ? 'default' : device.status === 'offline' ? 'destructive' : 'secondary'} class="transition-colors">
                                 {#if device.status === 'online'}
                                     <CheckCircle2 class="w-3 h-3 mr-1" />
@@ -113,6 +113,27 @@
                                 {/if}
                                 {device.status || 'Unknown'}
                             </Badge>
+                        </div>
+                        
+                        <!-- SMS Counter -->
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
+                            <div class="flex items-center gap-2">
+                                <MessageSquare class="w-4 h-4 text-muted-foreground" />
+                                <span class="text-sm text-muted-foreground">SMS Sent:</span>
+                                <span class="font-bold text-foreground">{$smsCounters[device.id] || 0}</span>
+                            </div>
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                class="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                                onclick={() => {
+                                    resetSmsCounter(device.id);
+                                    toast.success(`Counter reset for ${device.name}`);
+                                }}
+                            >
+                                <RotateCcw class="w-3 h-3 mr-1" />
+                                Reset
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>

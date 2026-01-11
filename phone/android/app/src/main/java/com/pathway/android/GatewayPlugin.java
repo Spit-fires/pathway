@@ -2,6 +2,7 @@ package com.pathway.android;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.ComponentName;
 import android.net.wifi.WifiManager;
 import android.text.format.Formatter;
 
@@ -23,6 +24,8 @@ import java.io.IOException;
 )
 public class GatewayPlugin extends Plugin {
     private ApiServer server;
+    private android.net.wifi.WifiManager.WifiLock wifiLock;
+    private android.os.PowerManager.WakeLock wakeLock;
 
     private void notifyLog(String message) {
         JSObject ret = new JSObject();
@@ -47,6 +50,13 @@ public class GatewayPlugin extends Plugin {
         try {
             server = new ApiServer(port, apiKey, getContext(), this::notifyLog);
             server.start();
+            
+            // Acquire WiFi lock to prevent WiFi from going to sleep
+            acquireWifiLock();
+            
+            // Acquire partial wake lock to keep CPU running
+            acquireWakeLock();
+            
             JSObject ret = new JSObject();
             ret.put("success", true);
             ret.put("message", "Server started on port " + port);
@@ -62,10 +72,53 @@ public class GatewayPlugin extends Plugin {
             server.stop();
             server = null;
         }
+        
+        // Release locks
+        releaseWifiLock();
+        releaseWakeLock();
+        
         JSObject ret = new JSObject();
         ret.put("success", true);
         ret.put("message", "Server stopped");
         call.resolve(ret);
+    }
+    
+    private void acquireWifiLock() {
+        if (wifiLock == null) {
+            WifiManager wm = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "Pathway:WifiLock");
+            wifiLock.setReferenceCounted(false);
+        }
+        if (!wifiLock.isHeld()) {
+            wifiLock.acquire();
+            notifyLog("WiFi lock acquired");
+        }
+    }
+    
+    private void releaseWifiLock() {
+        if (wifiLock != null && wifiLock.isHeld()) {
+            wifiLock.release();
+            notifyLog("WiFi lock released");
+        }
+    }
+    
+    private void acquireWakeLock() {
+        if (wakeLock == null) {
+            android.os.PowerManager pm = (android.os.PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+            wakeLock = pm.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "Pathway:WakeLock");
+            wakeLock.setReferenceCounted(false);
+        }
+        if (!wakeLock.isHeld()) {
+            wakeLock.acquire();
+            notifyLog("Wake lock acquired");
+        }
+    }
+    
+    private void releaseWakeLock() {
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+            notifyLog("Wake lock released");
+        }
     }
     
     @PluginMethod
@@ -141,6 +194,10 @@ public class GatewayPlugin extends Plugin {
 
     @PluginMethod
     public void exitApp(PluginCall call) {
+        // Release locks before exit
+        releaseWifiLock();
+        releaseWakeLock();
+        
         getBridge().executeOnMainThread(() -> {
             getActivity().finishAffinity();
             System.exit(0);
@@ -165,5 +222,108 @@ public class GatewayPlugin extends Plugin {
         } else {
             call.resolve();
         }
+    }
+    
+    @PluginMethod
+    public void openOemBatterySettings(PluginCall call) {
+        // Try to open OEM-specific battery optimization settings
+        // This handles Realme, Xiaomi (MIUI), OPPO (ColorOS), OnePlus (OxygenOS), Samsung, Huawei (EMUI), Vivo
+        String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
+        android.content.Intent intent = new android.content.Intent();
+        
+        try {
+            switch (manufacturer) {
+                case "xiaomi":
+                case "redmi":
+                    // MIUI Battery Saver / Autostart
+                    intent.setComponent(new ComponentName("com.miui.securitycenter",
+                            "com.miui.permcenter.autostart.AutoStartManagementActivity"));
+                    break;
+                    
+                case "oppo":
+                case "realme":
+                    // ColorOS / RealmeUI Battery Optimization
+                    try {
+                        intent.setComponent(new ComponentName("com.coloros.safecenter",
+                                "com.coloros.safecenter.permission.startup.StartupAppListActivity"));
+                    } catch (Exception e) {
+                        // Try alternative for newer RealmeUI
+                        intent.setComponent(new ComponentName("com.oplus.safecenter",
+                                "com.oplus.safecenter.permission.startup.StartupAppListActivity"));
+                    }
+                    break;
+                    
+                case "vivo":
+                    // Funtouch OS
+                    intent.setComponent(new ComponentName("com.vivo.permissionmanager",
+                            "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"));
+                    break;
+                    
+                case "huawei":
+                case "honor":
+                    // EMUI
+                    intent.setComponent(new ComponentName("com.huawei.systemmanager",
+                            "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"));
+                    break;
+                    
+                case "samsung":
+                    // OneUI / TouchWiz
+                    intent.setComponent(new ComponentName("com.samsung.android.lool",
+                            "com.samsung.android.sm.ui.battery.BatteryActivity"));
+                    break;
+                    
+                case "oneplus":
+                    // OxygenOS
+                    intent.setComponent(new ComponentName("com.oneplus.security",
+                            "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity"));
+                    break;
+                    
+                case "asus":
+                    // ZenUI
+                    intent.setComponent(new ComponentName("com.asus.mobilemanager",
+                            "com.asus.mobilemanager.autostart.AutoStartActivity"));
+                    break;
+                    
+                default:
+                    // Fallback to standard Android battery settings
+                    intent.setAction(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS);
+                    break;
+            }
+            
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(intent);
+            
+            JSObject ret = new JSObject();
+            ret.put("manufacturer", manufacturer);
+            ret.put("opened", true);
+            call.resolve(ret);
+            
+        } catch (Exception e) {
+            // Fallback to standard battery settings if OEM-specific fails
+            try {
+                android.content.Intent fallbackIntent = new android.content.Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS);
+                fallbackIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                getContext().startActivity(fallbackIntent);
+                
+                JSObject ret = new JSObject();
+                ret.put("manufacturer", manufacturer);
+                ret.put("opened", true);
+                ret.put("fallback", true);
+                call.resolve(ret);
+            } catch (Exception e2) {
+                call.reject("Unable to open battery settings: " + e2.getMessage());
+            }
+        }
+    }
+    
+    @PluginMethod
+    public void getDeviceInfo(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("manufacturer", android.os.Build.MANUFACTURER);
+        ret.put("model", android.os.Build.MODEL);
+        ret.put("brand", android.os.Build.BRAND);
+        ret.put("device", android.os.Build.DEVICE);
+        ret.put("sdkVersion", android.os.Build.VERSION.SDK_INT);
+        call.resolve(ret);
     }
 }

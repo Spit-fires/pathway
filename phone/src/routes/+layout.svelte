@@ -4,6 +4,7 @@
     import Gateway from '$lib/GatewayPlugin';
     import { Capacitor } from '@capacitor/core';
     import { Radio } from '@lucide/svelte';
+    import { version } from '../../package.json';
 
     let ipAddress = 'Detecting...';
 
@@ -51,6 +52,6 @@
 
     <!-- Footer -->
     <footer class="p-6 text-center text-xs text-muted-foreground/60 border-t border-border mt-auto">
-        <p class="font-mono">v0.0.1 • Local Node</p>
+        <p class="font-mono">v{version} • Local Node • <a href="https://fh.js.cool" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">fh.js.cool</a></p>
     </footer>
 </div>

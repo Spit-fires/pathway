@@ -1,9 +1,8 @@
 <script lang="ts">
-    import { devices, type Device } from '$lib/stores';
+    import { devices, smsCounters, incrementSmsCounter, type Device } from '$lib/stores';
     import { sendSms } from '$lib/gateway';
     import { Button } from '$lib/components/ui/button';
     import { Textarea } from '$lib/components/ui/textarea';
-    import { Input } from '$lib/components/ui/input';
     import { Label } from '$lib/components/ui/label';
     import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
     import { Checkbox } from '$lib/components/ui/checkbox';
@@ -76,7 +75,8 @@
         if (!message || !numbers || selectedDeviceIds.length === 0) return;
 
         isSending = true;
-        const numberList = numbers.split(',').map(n => n.trim()).filter(n => n);
+        // Parse numbers: support comma, newline, or space separated
+        const numberList = numbers.split(/[,\n\s]+/).map(n => n.trim()).filter(n => n);
         const targetDevices = activeDevices.filter(d => selectedDeviceIds.includes(d.id));
         
         let deviceIndex = 0;
@@ -94,6 +94,11 @@
                     reason: result.reason,
                     time: new Date()
                 }, ...logs];
+                
+                // Increment counter on successful send
+                if (result.status === 'sent') {
+                    incrementSmsCounter(device.id);
+                }
             } catch (e) {
                  logs = [{
                     device: device.name,
@@ -120,9 +125,9 @@
             </CardHeader>
             <CardContent class="space-y-6">
                 <div class="space-y-2">
-                    <Label for="numbers">Recipients (Details)</Label>
-                    <Input id="numbers" placeholder="+88017..., +88018... (comma separated)" bind:value={numbers} class="bg-background/50 font-mono" />
-                    <p class="text-xs text-muted-foreground">Enter numbers separated by commas</p>
+                    <Label for="numbers">Recipients (Phone Numbers)</Label>
+                    <Textarea id="numbers" placeholder="+88017..., +88018..." bind:value={numbers} class="bg-background/50 font-mono min-h-[80px] resize-y" aria-describedby="numbers-help" />
+                    <p id="numbers-help" class="text-xs text-muted-foreground">Enter numbers separated by commas, spaces, or new lines</p>
                 </div>
 
                 <div class="space-y-2">

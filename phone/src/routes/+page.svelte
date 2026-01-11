@@ -7,7 +7,7 @@
     import { Input } from '$lib/components/ui/input';
     import { Label } from '$lib/components/ui/label';
     import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
-    import { Eye, EyeOff, Play, Square, Trash2, Copy, Server, Radio, Activity, Globe, Settings, Power, Zap } from '@lucide/svelte';
+    import { Eye, EyeOff, Play, Square, Trash2, Copy, Server, Radio, Activity, Globe, Settings, Power, Zap, Battery } from '@lucide/svelte';
 
     let logs: string[] = [];
     let isRunning = false;
@@ -17,6 +17,7 @@
     let url = '';
     let isVisible = false;
     let listenerParams: any = null;
+    let deviceManufacturer = '';
 
     function addLog(msg: string) {
         logs = [`[${new Date().toLocaleTimeString()}] ${msg}`, ...logs].slice(0, 50);
@@ -136,6 +137,15 @@
             console.error(e);
         }
         updateUrl();
+        
+        // Get device info
+        try {
+            const deviceInfo = await Gateway.getDeviceInfo();
+            deviceManufacturer = deviceInfo.manufacturer;
+            addLog(`Device: ${deviceInfo.manufacturer} ${deviceInfo.model}`);
+        } catch (e) {
+            console.error("Failed to get device info", e);
+        }
 
         // Load SIMs
         try {
@@ -172,6 +182,15 @@
     async function requestBattery() {
         await Gateway.requestBatteryOpt();
     }
+    
+    async function openOemBattery() {
+        try {
+            const result = await Gateway.openOemBatterySettings();
+            addLog(`Opened ${result.manufacturer} battery settings${result.fallback ? ' (fallback)' : ''}`);
+        } catch (e: any) {
+            addLog(`Failed to open OEM settings: ${e.message}`);
+        }
+    }
 </script>
 
 <div class="space-y-6 max-w-2xl mx-auto">
@@ -188,6 +207,9 @@
                 <div class="flex items-center gap-2">
                     <Button variant="ghost" size="icon" class="w-8 h-8 rounded-full hover:bg-yellow-500/10 hover:text-yellow-600" onclick={requestBattery} title="Ignore Battery Optimizations">
                         <Zap class="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" class="w-8 h-8 rounded-full hover:bg-green-500/10 hover:text-green-600" onclick={openOemBattery} title="OEM Battery Settings (Realme, Xiaomi, etc.)">
+                        <Battery class="w-4 h-4" />
                     </Button>
                     <Button variant="ghost" size="icon" class="w-8 h-8 rounded-full hover:bg-destructive/10 hover:text-destructive" onclick={exitApp} title="Exit App">
                         <Power class="w-4 h-4" />

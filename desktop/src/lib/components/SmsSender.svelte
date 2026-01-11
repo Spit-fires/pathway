@@ -126,8 +126,8 @@
             <CardContent class="space-y-6">
                 <div class="space-y-2">
                     <Label for="numbers">Recipients (Phone Numbers)</Label>
-                    <Textarea id="numbers" placeholder="+88017..., +88018...&#10;One number per line or comma separated" bind:value={numbers} class="bg-background/50 font-mono min-h-[80px] resize-y" />
-                    <p class="text-xs text-muted-foreground">Enter numbers separated by commas, spaces, or new lines</p>
+                    <Textarea id="numbers" placeholder="+88017..., +88018..." bind:value={numbers} class="bg-background/50 font-mono min-h-[80px] resize-y" aria-describedby="numbers-help" />
+                    <p id="numbers-help" class="text-xs text-muted-foreground">Enter numbers separated by commas, spaces, or new lines</p>
                 </div>
 
                 <div class="space-y-2">

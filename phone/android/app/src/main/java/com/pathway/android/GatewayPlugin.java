@@ -86,6 +86,10 @@ public class GatewayPlugin extends Plugin {
     private void acquireWifiLock() {
         if (wifiLock == null) {
             WifiManager wm = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wm == null) {
+                notifyLog("WiFi manager not available");
+                return;
+            }
             wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "Pathway:WifiLock");
             wifiLock.setReferenceCounted(false);
         }
@@ -229,9 +233,17 @@ public class GatewayPlugin extends Plugin {
         // Try to open OEM-specific battery optimization settings
         // This handles Realme, Xiaomi (MIUI), OPPO (ColorOS), OnePlus (OxygenOS), Samsung, Huawei (EMUI), Vivo
         String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
-        android.content.Intent intent = new android.content.Intent();
+        
+        // Define potential intents for OPPO/Realme (they have multiple possible package names)
+        String[][] oppoRealmeIntents = {
+            {"com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity"},
+            {"com.oplus.safecenter", "com.oplus.safecenter.permission.startup.StartupAppListActivity"}
+        };
         
         try {
+            android.content.Intent intent = new android.content.Intent();
+            boolean useOppoFallback = false;
+            
             switch (manufacturer) {
                 case "xiaomi":
                 case "redmi":
@@ -242,15 +254,8 @@ public class GatewayPlugin extends Plugin {
                     
                 case "oppo":
                 case "realme":
-                    // ColorOS / RealmeUI Battery Optimization
-                    try {
-                        intent.setComponent(new ComponentName("com.coloros.safecenter",
-                                "com.coloros.safecenter.permission.startup.StartupAppListActivity"));
-                    } catch (Exception e) {
-                        // Try alternative for newer RealmeUI
-                        intent.setComponent(new ComponentName("com.oplus.safecenter",
-                                "com.oplus.safecenter.permission.startup.StartupAppListActivity"));
-                    }
+                    // ColorOS / RealmeUI Battery Optimization - try multiple package names
+                    useOppoFallback = true;
                     break;
                     
                 case "vivo":
@@ -290,6 +295,28 @@ public class GatewayPlugin extends Plugin {
                     break;
             }
             
+            // Special handling for OPPO/Realme with multiple possible intents
+            if (useOppoFallback) {
+                for (String[] intentData : oppoRealmeIntents) {
+                    try {
+                        android.content.Intent oppoIntent = new android.content.Intent();
+                        oppoIntent.setComponent(new ComponentName(intentData[0], intentData[1]));
+                        oppoIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                        getContext().startActivity(oppoIntent);
+                        
+                        JSObject ret = new JSObject();
+                        ret.put("manufacturer", manufacturer);
+                        ret.put("opened", true);
+                        call.resolve(ret);
+                        return;
+                    } catch (android.content.ActivityNotFoundException ignored) {
+                        // Try next intent
+                    }
+                }
+                // If none worked, throw to trigger fallback
+                throw new android.content.ActivityNotFoundException("No OPPO/Realme battery settings found");
+            }
+            
             intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
             getContext().startActivity(intent);
             
@@ -298,7 +325,7 @@ public class GatewayPlugin extends Plugin {
             ret.put("opened", true);
             call.resolve(ret);
             
-        } catch (Exception e) {
+        } catch (android.content.ActivityNotFoundException e) {
             // Fallback to standard battery settings if OEM-specific fails
             try {
                 android.content.Intent fallbackIntent = new android.content.Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS);
@@ -313,6 +340,8 @@ public class GatewayPlugin extends Plugin {
             } catch (Exception e2) {
                 call.reject("Unable to open battery settings: " + e2.getMessage());
             }
+        } catch (Exception e) {
+            call.reject("Unable to open battery settings: " + e.getMessage());
         }
     }
     

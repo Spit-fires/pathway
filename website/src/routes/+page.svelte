@@ -7,9 +7,21 @@
 	let heroSection: HTMLElement;
 	let featuresSection: HTMLElement;
 	let mounted = $state(false);
+	let latestVersion = $state('v0.5.0');
 
-	onMount(() => {
+	onMount(async () => {
 		mounted = true;
+		
+		// Fetch latest version from GitHub
+		try {
+			const res = await fetch('https://api.github.com/repos/Spit-fires/pathway/releases/latest');
+			if (res.ok) {
+				const data = await res.json();
+				latestVersion = data.tag_name || 'v0.5.0';
+			}
+		} catch (e) {
+			// Keep default version on error
+		}
 		
 		// Animate hero elements
 		animate(
@@ -113,7 +125,7 @@
 			<div class="space-y-8">
 				<div class="hero-title opacity-0">
 					<span class="inline-block px-4 py-2 bg-secondary border-3 border-border neo-shadow font-mono text-sm font-bold mb-6">
-						v0.5.0 NOW AVAILABLE
+						{latestVersion.toUpperCase()} NOW AVAILABLE
 					</span>
 					<h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
 						Self-Hosted
@@ -209,15 +221,15 @@
 			<h2 class="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
 				Ready to Get Started?
 			</h2>
-			<p class="text-lg text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
+			<p class="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
 				Download the apps, set up your gateway in minutes, and start sending SMS through your own infrastructure.
 			</p>
 			<div class="flex flex-wrap justify-center gap-4">
-				<a href="{base}/download" class="neo-btn px-8 py-4 bg-background text-foreground font-bold text-lg flex items-center gap-2 border-border">
+				<a href="{base}/download" class="inline-block px-8 py-4 bg-background text-foreground font-bold text-lg border-3 border-border neo-shadow hover:neo-shadow-lg hover:-translate-y-0.5 transition-all">
 					Download Apps
-					<ArrowRight class="w-5 h-5" />
+					<ArrowRight class="w-5 h-5 inline ml-2" />
 				</a>
-				<a href="https://github.com/Spit-fires/pathway" target="_blank" rel="noopener noreferrer" class="neo-btn px-8 py-4 bg-transparent text-primary-foreground font-bold text-lg border-primary-foreground">
+				<a href="https://github.com/Spit-fires/pathway" target="_blank" rel="noopener noreferrer" class="inline-block px-8 py-4 bg-white text-primary font-bold text-lg border-3 border-border neo-shadow hover:neo-shadow-lg hover:-translate-y-0.5 transition-all">
 					View Source
 				</a>
 			</div>

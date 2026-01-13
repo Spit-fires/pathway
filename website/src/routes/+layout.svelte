@@ -120,7 +120,7 @@
 					© {new Date().getFullYear()} Pathway. MIT License.
 				</p>
 				<p class="text-muted-foreground text-sm">
-					Made with ❤️ by the Pathway Team
+					Made with ❤️ by <a href="https://fh.js.cool" target="_blank" rel="noopener noreferrer" class="neo-link text-primary">fh.js.cool</a>
 				</p>
 			</div>
 		</div>

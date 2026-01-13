@@ -4,8 +4,22 @@
 	import { Smartphone, Monitor, Apple, Globe, Download, ExternalLink } from '@lucide/svelte';
 
 	const GITHUB_RELEASE_URL = 'https://github.com/Spit-fires/pathway/releases/latest';
+	const GITHUB_DOWNLOAD_BASE = 'https://github.com/Spit-fires/pathway/releases/latest/download';
 	
-	onMount(() => {
+	let latestVersion = $state('v0.5.0');
+
+	onMount(async () => {
+		// Fetch latest version from GitHub
+		try {
+			const res = await fetch('https://api.github.com/repos/Spit-fires/pathway/releases/latest');
+			if (res.ok) {
+				const data = await res.json();
+				latestVersion = data.tag_name || 'v0.5.0';
+			}
+		} catch (e) {
+			// Keep default version on error
+		}
+
 		animate(
 			'.download-card' as any,
 			{ opacity: [0, 1], y: [30, 0] },
@@ -20,7 +34,7 @@
 			icon: Smartphone,
 			color: 'bg-primary',
 			files: [
-				{ name: 'app-debug.apk', label: 'Android APK', size: '~4 MB' }
+				{ name: 'app-debug.apk', label: 'Android APK', size: '~4 MB', direct: true }
 			]
 		},
 		{
@@ -29,8 +43,8 @@
 			icon: Monitor,
 			color: 'bg-secondary',
 			files: [
-				{ name: 'pathway-desktop.exe', label: 'Portable EXE', size: '~15 MB' },
-				{ name: 'Pathway.Desktop_*_x64-setup.exe', label: 'Installer', size: '~4 MB' }
+				{ name: 'pathway-desktop-windows-portable.exe', label: 'Portable EXE', size: '~15 MB', direct: false },
+				{ name: 'pathway-desktop-windows-nsis.exe', label: 'Installer', size: '~4 MB', direct: false }
 			]
 		},
 		{
@@ -39,7 +53,7 @@
 			icon: Apple,
 			color: 'bg-accent',
 			files: [
-				{ name: 'Pathway.Desktop_*_aarch64.dmg', label: 'DMG Image', size: '~6 MB' }
+				{ name: 'pathway-desktop-macos-dmg.dmg', label: 'DMG Image', size: '~6 MB', direct: false }
 			]
 		},
 		{
@@ -48,8 +62,8 @@
 			icon: Monitor,
 			color: 'bg-primary',
 			files: [
-				{ name: 'Pathway.Desktop_*_amd64.AppImage', label: 'AppImage', size: '~83 MB' },
-				{ name: 'Pathway.Desktop_*_amd64.deb', label: 'Debian Package', size: '~6 MB' }
+				{ name: 'pathway-desktop-linux-appimage.AppImage', label: 'AppImage', size: '~83 MB', direct: false },
+				{ name: 'pathway-desktop-linux-deb.deb', label: 'Debian Package', size: '~6 MB', direct: false }
 			]
 		},
 		{
@@ -58,10 +72,17 @@
 			icon: Globe,
 			color: 'bg-secondary',
 			files: [
-				{ name: 'desktop-build.zip', label: 'Static Build', size: '~90 KB' }
+				{ name: 'desktop-build.zip', label: 'Static Build', size: '~90 KB', direct: true }
 			]
 		}
 	];
+
+	function getDownloadUrl(filename: string, direct: boolean): string {
+		if (direct) {
+			return `${GITHUB_DOWNLOAD_BASE}/${filename}`;
+		}
+		return GITHUB_RELEASE_URL;
+	}
 </script>
 
 <svelte:head>
@@ -73,7 +94,7 @@
 		<!-- Header -->
 		<div class="text-center mb-16">
 			<span class="inline-block px-4 py-2 bg-secondary border-3 border-border neo-shadow font-mono text-sm font-bold mb-6">
-				FREE & OPEN SOURCE
+				{latestVersion.toUpperCase()} • FREE & OPEN SOURCE
 			</span>
 			<h1 class="text-4xl md:text-5xl font-bold mb-4">Download Pathway</h1>
 			<p class="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -94,7 +115,7 @@
 					<div class="space-y-2">
 						{#each item.files as file}
 							<a 
-								href={GITHUB_RELEASE_URL}
+								href={getDownloadUrl(file.name, file.direct)}
 								target="_blank"
 								rel="noopener noreferrer"
 								class="flex items-center justify-between p-3 bg-muted border-3 border-border hover:bg-secondary/50 transition-colors group"

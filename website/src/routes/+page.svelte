@@ -217,7 +217,7 @@
 <!-- CTA Section -->
 <section class="py-16 md:py-24">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6">
-		<div class="neo-card p-8 md:p-12 text-center bg-primary">
+		<div class="p-8 md:p-12 text-center border-3 border-border neo-shadow-lg" style="background-color: var(--primary);">
 			<h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
 				Ready to Get Started?
 			</h2>
@@ -225,11 +225,11 @@
 				Download the apps, set up your gateway in minutes, and start sending SMS through your own infrastructure.
 			</p>
 			<div class="flex flex-wrap justify-center gap-4">
-				<a href="{base}/download" class="inline-block px-8 py-4 bg-background text-foreground font-bold text-lg border-3 border-border neo-shadow hover:neo-shadow-lg hover:-translate-y-0.5 transition-all">
+				<a href="{base}/download" class="inline-block px-8 py-4 bg-white text-black font-bold text-lg border-3 border-border neo-shadow hover:neo-shadow-lg hover:-translate-y-0.5 transition-all">
 					Download Apps
 					<ArrowRight class="w-5 h-5 inline ml-2" />
 				</a>
-				<a href="https://github.com/Spit-fires/pathway" target="_blank" rel="noopener noreferrer" class="inline-block px-8 py-4 bg-white text-primary font-bold text-lg border-3 border-border neo-shadow hover:neo-shadow-lg hover:-translate-y-0.5 transition-all">
+				<a href="https://github.com/Spit-fires/pathway" target="_blank" rel="noopener noreferrer" class="inline-block px-8 py-4 bg-black text-white font-bold text-lg border-3 border-border neo-shadow hover:neo-shadow-lg hover:-translate-y-0.5 transition-all">
 					View Source
 				</a>
 			</div>

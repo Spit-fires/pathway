@@ -27,7 +27,7 @@
 				<!-- Logo -->
 				<a href="{base}/" class="flex items-center gap-3 group">
 					<div class="w-10 h-10 bg-primary flex items-center justify-center border-3 border-border neo-shadow group-hover:neo-shadow-lg transition-all">
-						<Radio class="w-5 h-5 text-primary-foreground" />
+						<Radio class="w-5 h-5 text-white" />
 					</div>
 					<span class="text-xl font-bold tracking-tight">Pathway</span>
 				</a>
@@ -86,7 +86,7 @@
 				<div class="md:col-span-2">
 					<div class="flex items-center gap-3 mb-4">
 						<div class="w-10 h-10 bg-primary flex items-center justify-center border-3 border-border neo-shadow">
-							<Radio class="w-5 h-5 text-primary-foreground" />
+							<Radio class="w-5 h-5 text-white" />
 						</div>
 						<span class="text-xl font-bold">Pathway</span>
 					</div>

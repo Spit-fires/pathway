@@ -1,38 +1,64 @@
-# sv
+# Pathway Website
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Product showcase website for [Pathway](https://github.com/Spit-fires/pathway) - a self-hosted SMS & USSD Gateway solution.
 
-## Creating a project
+## Overview
 
-If you're seeing this, you've probably already done this step. Congrats!
+This is the public-facing website for the Pathway project, built with SvelteKit and featuring a neo brutalism design theme with Motion scroll animations.
 
-```sh
-# create a new project in the current directory
-npx sv create
+### Pages
 
-# create a new project in my-app
-npx sv create my-app
-```
+- **Home** - Hero section with features overview
+- **Download** - Platform-specific download links to GitHub releases
+- **Guide** - Installation and usage instructions
+- **Privacy** - Privacy policy
+- **Terms** - Terms of service
 
-## Developing
+## Development
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Prerequisites
 
-```sh
-npm run dev
+- Node.js 20+
+- pnpm
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
+### Setup
 
 ```sh
-npm run build
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm run dev
+
+# Type check
+pnpm run check
+
+# Build for production
+pnpm run build
+
+# Preview production build
+pnpm run preview
 ```
 
-You can preview the production build with `npm run preview`.
+## Deployment
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+The website is automatically deployed to GitHub Pages when changes are pushed to the `main` branch (in the `/website` directory).
+
+### GitHub Pages Configuration
+
+The workflow supports custom base paths via the `WEBSITE_BASE_PATH` repository variable:
+
+- **Default**: Uses `/{repository-name}` (e.g., `/pathway`)
+- **Custom domain**: Set `WEBSITE_BASE_PATH` to empty string `""` in repository variables
+
+### Manual Deployment
+
+To trigger a manual deployment, use the "Run workflow" button in the GitHub Actions tab.
+
+## Tech Stack
+
+- [SvelteKit](https://kit.svelte.dev/) - Web framework
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Motion](https://motion.dev/) - Animations
+- [Lucide Icons](https://lucide.dev/) - Icons
+- [@sveltejs/adapter-static](https://kit.svelte.dev/docs/adapter-static) - Static site generation

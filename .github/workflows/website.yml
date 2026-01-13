@@ -53,7 +53,7 @@ jobs:
 
       - name: Build
         env:
-          BASE_PATH: '/${{ github.event.repository.name }}'
+          BASE_PATH: ${{ vars.WEBSITE_BASE_PATH != '' && vars.WEBSITE_BASE_PATH || format('/{0}', github.event.repository.name) }}
         run: pnpm run build
 
       - name: Upload artifact

@@ -11,6 +11,11 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   # Build Android APK from /phone using Capacitor
   build-android:
@@ -37,7 +42,7 @@ jobs:
           node-version: "22"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -103,7 +108,7 @@ jobs:
           node-version: "20"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -169,7 +174,7 @@ jobs:
           node-version: "20"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -243,9 +248,57 @@ jobs:
           name: ${{ matrix.artifact-name }}-dmg
           path: desktop/src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
 
+  # Build Website for GitHub Pages
+  build-website:
+    name: Build Website
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./website
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-website-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-website-
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build
+        env:
+          BASE_PATH: ${{ vars.WEBSITE_BASE_PATH != '' && vars.WEBSITE_BASE_PATH || format('/{0}', github.event.repository.name) }}
+        run: pnpm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./website/build
+
   release:
     name: Create GitHub Release
-    needs: [build-android, build-desktop-static, build-desktop-tauri]
+    needs: [build-android, build-desktop-static, build-desktop-tauri, build-website]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -287,3 +340,20 @@ jobs:
           files: ./release-files/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Deploy website to GitHub Pages after release
+  deploy-website:
+    name: Deploy Website to GitHub Pages
+    needs: [release, build-website]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

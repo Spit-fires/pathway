@@ -11,6 +11,11 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   # Build Android APK from /phone using Capacitor
   build-android:
@@ -37,7 +42,7 @@ jobs:
           node-version: "22"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -103,7 +108,7 @@ jobs:
           node-version: "20"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -169,7 +174,7 @@ jobs:
           node-version: "20"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -243,9 +248,57 @@ jobs:
           name: ${{ matrix.artifact-name }}-dmg
           path: desktop/src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
 
+  # Build Website for GitHub Pages
+  build-website:
+    name: Build Website
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./website
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-website-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-website-
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build
+        env:
+          BASE_PATH: ${{ vars.WEBSITE_BASE_PATH != '' && vars.WEBSITE_BASE_PATH || format('/{0}', github.event.repository.name) }}
+        run: pnpm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./website/build
+
   release:
     name: Create GitHub Release
-    needs: [build-android, build-desktop-static, build-desktop-tauri]
+    needs: [build-android, build-desktop-static, build-desktop-tauri, build-website]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -264,18 +317,43 @@ jobs:
       - name: Collect release files
         run: |
           mkdir -p release-files
-          # Android APK from phone/capacitor
-          cp ./artifacts/android-apk/*.apk ./release-files/ 2>/dev/null || true
-          # Desktop static build
-          cp ./artifacts/desktop-build/*.zip ./release-files/ 2>/dev/null || true
-          # Tauri desktop builds - Linux
-          find ./artifacts -name "*.AppImage" -exec cp {} ./release-files/ \; 2>/dev/null || true
-          find ./artifacts -name "*.deb" -exec cp {} ./release-files/ \; 2>/dev/null || true
-          # Tauri desktop builds - Windows
-          find ./artifacts -name "*.msi" -exec cp {} ./release-files/ \; 2>/dev/null || true
-          find ./artifacts -name "*.exe" -exec cp {} ./release-files/ \; 2>/dev/null || true
-          # Tauri desktop builds - macOS
-          find ./artifacts -name "*.dmg" -exec cp {} ./release-files/ \; 2>/dev/null || true
+          
+          # Android APK - rename to unified format
+          if [ -f ./artifacts/android-apk/app-debug.apk ]; then
+            cp ./artifacts/android-apk/app-debug.apk ./release-files/pathway-android.apk
+          fi
+          
+          # Desktop static build - rename to unified format
+          if [ -f ./artifacts/desktop-build/desktop-build.zip ]; then
+            cp ./artifacts/desktop-build/desktop-build.zip ./release-files/pathway-web.zip
+          fi
+          
+          # Linux AppImage - rename to unified format
+          for f in ./artifacts/pathway-desktop-linux-appimage/*.AppImage; do
+            [ -f "$f" ] && cp "$f" ./release-files/pathway-linux.AppImage
+          done
+          
+          # Linux deb - rename to unified format
+          for f in ./artifacts/pathway-desktop-linux-deb/*.deb; do
+            [ -f "$f" ] && cp "$f" ./release-files/pathway-linux.deb
+          done
+          
+          # Windows portable exe - rename to unified format
+          if [ -f ./artifacts/pathway-desktop-windows-portable/pathway-desktop.exe ]; then
+            cp ./artifacts/pathway-desktop-windows-portable/pathway-desktop.exe ./release-files/pathway-windows-portable.exe
+          fi
+          
+          # Windows NSIS installer - rename to unified format
+          for f in ./artifacts/pathway-desktop-windows-nsis/*.exe; do
+            [ -f "$f" ] && cp "$f" ./release-files/pathway-windows-setup.exe
+          done
+          
+          # macOS DMG - rename to unified format
+          for f in ./artifacts/pathway-desktop-macos-dmg/*.dmg; do
+            [ -f "$f" ] && cp "$f" ./release-files/pathway-macos.dmg
+          done
+          
+          echo "Release files:"
           ls -la ./release-files/
 
       - name: Create Release
@@ -287,3 +365,20 @@ jobs:
           files: ./release-files/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Deploy website to GitHub Pages after release
+  deploy-website:
+    name: Deploy Website to GitHub Pages
+    needs: [release, build-website]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

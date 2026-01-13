@@ -1,0 +1,11 @@
+# Pathway SMS Gateway - robots.txt
+# https://spit-fires.github.io/pathway
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://spit-fires.github.io/pathway/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1

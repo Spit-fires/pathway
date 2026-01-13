@@ -239,7 +239,7 @@
                         </Button>
                     </div>
                     <p class="text-xs text-muted-foreground leading-relaxed">
-                        API requires <code class="bg-muted px-1 py-0.5 rounded text-foreground font-mono">Authorization: Bearer KEY</code>
+                        API requires <code class="bg-muted px-1 py-0.5 rounded text-foreground font-mono">Authorization: Bearer {apiKey}</code>
                     </p>
                 </div>
             {:else}

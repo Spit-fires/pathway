@@ -204,7 +204,7 @@
 			{#each features as feature, i}
 				<div class="feature-card opacity-0 neo-card p-6 hover:-translate-y-1 transition-transform">
 					<div class="{feature.color} w-12 h-12 flex items-center justify-center border-3 border-border neo-shadow mb-4">
-						<feature.icon class="w-6 h-6 {feature.color === 'bg-secondary' ? 'text-secondary-foreground' : 'text-primary-foreground'}" />
+						<feature.icon class="w-6 h-6 {feature.color === 'bg-secondary' ? 'text-black' : 'text-white'}" />
 					</div>
 					<h3 class="text-xl font-bold mb-2">{feature.title}</h3>
 					<p class="text-muted-foreground">{feature.description}</p>
@@ -218,10 +218,10 @@
 <section class="py-16 md:py-24">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6">
 		<div class="neo-card p-8 md:p-12 text-center bg-primary">
-			<h2 class="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+			<h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
 				Ready to Get Started?
 			</h2>
-			<p class="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+			<p class="text-lg text-white mb-8 max-w-2xl mx-auto">
 				Download the apps, set up your gateway in minutes, and start sending SMS through your own infrastructure.
 			</p>
 			<div class="flex flex-wrap justify-center gap-4">

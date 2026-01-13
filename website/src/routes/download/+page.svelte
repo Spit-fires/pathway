@@ -83,21 +83,25 @@
 </script>
 
 <svelte:head>
-	<title>Download - Pathway</title>
+	<title>Download Pathway - Free SMS Gateway for Android, Windows, macOS, Linux</title>
+	<meta name="description" content="Download Pathway SMS gateway for free. Available for Android, Windows, macOS, and Linux. Open source, self-hosted SMS automation solution." />
+	<meta name="keywords" content="download SMS gateway, Android SMS app, Windows SMS dashboard, macOS SMS app, Linux SMS gateway, free SMS software" />
+	<meta property="og:title" content="Download Pathway - Free SMS Gateway" />
+	<meta property="og:description" content="Download Pathway SMS gateway for free. Available for Android, Windows, macOS, and Linux." />
 </svelte:head>
 
-<section class="py-16 md:py-24">
+<section class="py-16 md:py-24" aria-labelledby="download-heading">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6">
 		<!-- Header -->
-		<div class="text-center mb-16">
-			<span class="inline-block px-4 py-2 bg-secondary border-3 border-border neo-shadow font-mono text-sm font-bold mb-6">
+		<header class="text-center mb-16">
+			<span class="inline-block px-4 py-2 bg-secondary border-3 border-border neo-shadow font-mono text-sm font-bold mb-6" role="status">
 				{latestVersion.toUpperCase()} • FREE & OPEN SOURCE
 			</span>
-			<h1 class="text-4xl md:text-5xl font-bold mb-4">Download Pathway</h1>
+			<h1 id="download-heading" class="text-4xl md:text-5xl font-bold mb-4">Download Pathway</h1>
 			<p class="text-lg text-muted-foreground max-w-2xl mx-auto">
 				Get the Android gateway app and desktop dashboard for your platform. All apps are free and open source.
 			</p>
-		</div>
+		</header>
 
 		<!-- Download Cards -->
 		<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">

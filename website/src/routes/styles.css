@@ -113,3 +113,41 @@
 	text-decoration-color: var(--primary);
 	color: var(--primary);
 }
+
+/* Screen reader only - for accessibility */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Skip to content link */
+.skip-link {
+	position: absolute;
+	top: -100%;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 100;
+	padding: 1rem 2rem;
+	background: var(--foreground);
+	color: var(--background);
+	font-weight: bold;
+	text-decoration: none;
+	transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+	top: 1rem;
+}
+
+/* Focus visible styles for better keyboard navigation */
+:focus-visible {
+	outline: 3px solid var(--primary);
+	outline-offset: 2px;
+}

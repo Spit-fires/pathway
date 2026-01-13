@@ -3,18 +3,22 @@
 </script>
 
 <svelte:head>
-	<title>Privacy Policy - Pathway</title>
+	<title>Privacy Policy - Pathway SMS Gateway</title>
+	<meta name="description" content="Pathway privacy policy. Learn how the self-hosted SMS gateway handles your data. No data collection, complete privacy control." />
+	<meta name="keywords" content="Pathway privacy, SMS gateway privacy policy, self-hosted SMS privacy, data protection" />
+	<meta property="og:title" content="Privacy Policy - Pathway" />
+	<meta property="og:description" content="Learn how Pathway SMS gateway protects your privacy. Self-hosted solution with no data collection." />
 </svelte:head>
 
-<section class="py-16 md:py-24">
-	<div class="max-w-4xl mx-auto px-4 sm:px-6">
-		<div class="mb-12">
-			<span class="inline-block px-4 py-2 bg-accent border-3 border-border neo-shadow font-mono text-sm font-bold text-accent-foreground mb-6">
+<section class="py-16 md:py-24" aria-labelledby="privacy-heading">
+	<article class="max-w-4xl mx-auto px-4 sm:px-6">
+		<header class="mb-12">
+			<span class="inline-block px-4 py-2 bg-accent border-3 border-border neo-shadow font-mono text-sm font-bold text-white mb-6">
 				LEGAL
 			</span>
-			<h1 class="text-4xl md:text-5xl font-bold mb-4">Privacy Policy</h1>
-			<p class="text-muted-foreground">Last updated: January 2026</p>
-		</div>
+			<h1 id="privacy-heading" class="text-4xl md:text-5xl font-bold mb-4">Privacy Policy</h1>
+			<p class="text-muted-foreground"><time datetime="2026-01">Last updated: January 2026</time></p>
+		</header>
 
 		<div class="prose prose-lg max-w-none space-y-8">
 			<div class="neo-card p-6 md:p-8">
@@ -121,5 +125,5 @@
 				</p>
 			</div>
 		</div>
-	</div>
+	</article>
 </section>

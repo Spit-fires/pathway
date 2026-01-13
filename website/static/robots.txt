@@ -1,3 +1,11 @@
-# allow crawling everything by default
+# Pathway SMS Gateway - robots.txt
+# https://spit-fires.github.io/pathway
+
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemap location
+Sitemap: https://spit-fires.github.io/pathway/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1

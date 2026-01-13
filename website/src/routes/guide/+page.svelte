@@ -14,20 +14,24 @@
 </script>
 
 <svelte:head>
-	<title>User Guide - Pathway</title>
+	<title>User Guide - How to Set Up Pathway SMS Gateway</title>
+	<meta name="description" content="Learn how to set up and use Pathway SMS gateway. Step-by-step instructions for installing the Android app, configuring the gateway, and using the API." />
+	<meta name="keywords" content="SMS gateway setup, Pathway tutorial, Android SMS API guide, how to send SMS via API, SMS gateway installation" />
+	<meta property="og:title" content="User Guide - Pathway SMS Gateway Setup" />
+	<meta property="og:description" content="Step-by-step guide to set up Pathway SMS gateway on Android and connect with the desktop dashboard." />
 </svelte:head>
 
 <!-- Hero -->
-<section class="py-16 border-b-3 border-border">
-	<div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+<section class="py-16 border-b-3 border-border" aria-labelledby="guide-heading">
+	<header class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
 		<span class="inline-block px-4 py-2 bg-accent border-3 border-border neo-shadow font-mono text-sm font-bold text-white mb-6">
 			GETTING STARTED
 		</span>
-		<h1 class="text-4xl md:text-5xl font-bold mb-4">User Guide</h1>
+		<h1 id="guide-heading" class="text-4xl md:text-5xl font-bold mb-4">User Guide</h1>
 		<p class="text-lg text-muted-foreground max-w-2xl mx-auto">
 			Learn how to set up and use Pathway to send SMS through your Android device.
 		</p>
-	</div>
+	</header>
 </section>
 
 <!-- Installation Steps -->

@@ -108,7 +108,7 @@
 			{#each downloads as item}
 				<div class="download-card opacity-0 neo-card p-6 flex flex-col">
 					<div class="{item.color} w-12 h-12 flex items-center justify-center border-3 border-border neo-shadow mb-4">
-						<item.icon class="w-6 h-6 {item.color === 'bg-secondary' ? 'text-black' : 'text-white'}" />
+						<item.icon class="w-6 h-6 {item.color === 'bg-secondary' ? 'text-secondary-foreground' : item.color === 'bg-accent' ? 'text-accent-foreground' : 'text-primary-foreground'}" />
 					</div>
 					<h3 class="text-xl font-bold mb-2">{item.title}</h3>
 					<p class="text-muted-foreground mb-6 flex-1">{item.description}</p>

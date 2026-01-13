@@ -213,7 +213,7 @@
 			{#each features as feature, i}
 				<article class="feature-card opacity-0 neo-card p-6 hover:-translate-y-1 transition-transform" role="listitem">
 					<div class="{feature.color} w-12 h-12 flex items-center justify-center border-3 border-border neo-shadow mb-4" aria-hidden="true">
-						<feature.icon class="w-6 h-6 {feature.color === 'bg-secondary' ? 'text-black' : 'text-white'}" />
+						<feature.icon class="w-6 h-6 {feature.color === 'bg-secondary' ? 'text-secondary-foreground' : feature.color === 'bg-accent' ? 'text-accent-foreground' : 'text-primary-foreground'}" />
 					</div>
 					<h3 class="text-xl font-bold mb-2">{feature.title}</h3>
 					<p class="text-muted-foreground">{feature.description}</p>
@@ -226,19 +226,19 @@
 <!-- CTA Section -->
 <section class="py-16 md:py-24" aria-labelledby="cta-heading">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6">
-		<aside class="p-8 md:p-12 text-center border-3 border-border neo-shadow-lg" style="background-color: var(--primary);">
-			<h2 id="cta-heading" class="text-3xl md:text-4xl font-bold text-white mb-4">
+		<aside class="cta-primary p-8 md:p-12 text-center border-3 border-border neo-shadow-lg">
+			<h2 id="cta-heading" class="text-3xl md:text-4xl font-bold mb-4">
 				Ready to Get Started?
 			</h2>
-			<p class="text-lg text-white mb-8 max-w-2xl mx-auto">
+			<p class="text-lg mb-8 max-w-2xl mx-auto">
 				Download the apps, set up your gateway in minutes, and start sending SMS through your own infrastructure.
 			</p>
 			<nav class="flex flex-wrap justify-center gap-4" aria-label="Call to action">
-				<a href="{base}/download" class="inline-block px-8 py-4 bg-white text-black font-bold text-lg border-3 border-border neo-shadow hover:neo-shadow-lg hover:-translate-y-0.5 transition-all">
+				<a href="{base}/download" class="neo-btn px-8 py-4 bg-background text-foreground font-bold text-lg">
 					Download Apps
 					<ArrowRight class="w-5 h-5 inline ml-2" aria-hidden="true" />
 				</a>
-				<a href="https://github.com/Spit-fires/pathway" target="_blank" rel="noopener noreferrer" class="inline-block px-8 py-4 bg-black text-white font-bold text-lg border-3 border-border neo-shadow hover:neo-shadow-lg hover:-translate-y-0.5 transition-all">
+				<a href="https://github.com/Spit-fires/pathway" target="_blank" rel="noopener noreferrer" class="neo-btn px-8 py-4 bg-foreground text-background font-bold text-lg">
 					View Source
 				</a>
 			</nav>

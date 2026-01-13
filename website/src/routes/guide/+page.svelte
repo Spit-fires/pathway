@@ -24,7 +24,7 @@
 <!-- Hero -->
 <section class="py-16 border-b-3 border-border" aria-labelledby="guide-heading">
 	<header class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-		<span class="inline-block px-4 py-2 bg-accent border-3 border-border neo-shadow font-mono text-sm font-bold text-white mb-6">
+		<span class="inline-block px-4 py-2 bg-accent border-3 border-border neo-shadow font-mono text-sm font-bold text-accent-foreground mb-6">
 			GETTING STARTED
 		</span>
 		<h1 id="guide-heading" class="text-4xl md:text-5xl font-bold mb-4">User Guide</h1>
@@ -38,7 +38,7 @@
 <section class="py-16">
 	<div class="max-w-4xl mx-auto px-4 sm:px-6">
 		<h2 class="text-2xl font-bold mb-8 flex items-center gap-3">
-			<span class="w-10 h-10 bg-primary flex items-center justify-center border-3 border-border neo-shadow text-white font-bold">1</span>
+			<span class="w-10 h-10 bg-primary flex items-center justify-center border-3 border-border neo-shadow text-primary-foreground font-bold">1</span>
 			Install the Android Gateway
 		</h2>
 
@@ -75,7 +75,7 @@
 		</div>
 
 		<h2 class="text-2xl font-bold mb-8 flex items-center gap-3">
-			<span class="w-10 h-10 bg-primary flex items-center justify-center border-3 border-border neo-shadow text-white font-bold">2</span>
+			<span class="w-10 h-10 bg-primary flex items-center justify-center border-3 border-border neo-shadow text-primary-foreground font-bold">2</span>
 			Configure the Gateway
 		</h2>
 
@@ -118,7 +118,7 @@
 		</div>
 
 		<h2 class="text-2xl font-bold mb-8 flex items-center gap-3">
-			<span class="w-10 h-10 bg-primary flex items-center justify-center border-3 border-border neo-shadow text-white font-bold">3</span>
+			<span class="w-10 h-10 bg-primary flex items-center justify-center border-3 border-border neo-shadow text-primary-foreground font-bold">3</span>
 			Connect the Desktop Dashboard
 		</h2>
 

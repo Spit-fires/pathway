@@ -151,3 +151,14 @@
 	outline: 3px solid var(--primary);
 	outline-offset: 2px;
 }
+
+/* CTA section with primary background - overrides neo-card */
+.cta-primary {
+	background-color: var(--primary) !important;
+	color: var(--primary-foreground);
+}
+
+.cta-primary h2,
+.cta-primary p {
+	color: var(--primary-foreground);
+}

@@ -317,18 +317,43 @@ jobs:
       - name: Collect release files
         run: |
           mkdir -p release-files
-          # Android APK from phone/capacitor
-          cp ./artifacts/android-apk/*.apk ./release-files/ 2>/dev/null || true
-          # Desktop static build
-          cp ./artifacts/desktop-build/*.zip ./release-files/ 2>/dev/null || true
-          # Tauri desktop builds - Linux
-          find ./artifacts -name "*.AppImage" -exec cp {} ./release-files/ \; 2>/dev/null || true
-          find ./artifacts -name "*.deb" -exec cp {} ./release-files/ \; 2>/dev/null || true
-          # Tauri desktop builds - Windows
-          find ./artifacts -name "*.msi" -exec cp {} ./release-files/ \; 2>/dev/null || true
-          find ./artifacts -name "*.exe" -exec cp {} ./release-files/ \; 2>/dev/null || true
-          # Tauri desktop builds - macOS
-          find ./artifacts -name "*.dmg" -exec cp {} ./release-files/ \; 2>/dev/null || true
+          
+          # Android APK - rename to unified format
+          if [ -f ./artifacts/android-apk/app-debug.apk ]; then
+            cp ./artifacts/android-apk/app-debug.apk ./release-files/pathway-android.apk
+          fi
+          
+          # Desktop static build - rename to unified format
+          if [ -f ./artifacts/desktop-build/desktop-build.zip ]; then
+            cp ./artifacts/desktop-build/desktop-build.zip ./release-files/pathway-web.zip
+          fi
+          
+          # Linux AppImage - rename to unified format
+          for f in ./artifacts/pathway-desktop-linux-appimage/*.AppImage; do
+            [ -f "$f" ] && cp "$f" ./release-files/pathway-linux.AppImage
+          done
+          
+          # Linux deb - rename to unified format
+          for f in ./artifacts/pathway-desktop-linux-deb/*.deb; do
+            [ -f "$f" ] && cp "$f" ./release-files/pathway-linux.deb
+          done
+          
+          # Windows portable exe - rename to unified format
+          if [ -f ./artifacts/pathway-desktop-windows-portable/pathway-desktop.exe ]; then
+            cp ./artifacts/pathway-desktop-windows-portable/pathway-desktop.exe ./release-files/pathway-windows-portable.exe
+          fi
+          
+          # Windows NSIS installer - rename to unified format
+          for f in ./artifacts/pathway-desktop-windows-nsis/*.exe; do
+            [ -f "$f" ] && cp "$f" ./release-files/pathway-windows-setup.exe
+          done
+          
+          # macOS DMG - rename to unified format
+          for f in ./artifacts/pathway-desktop-macos-dmg/*.dmg; do
+            [ -f "$f" ] && cp "$f" ./release-files/pathway-macos.dmg
+          done
+          
+          echo "Release files:"
           ls -la ./release-files/
 
       - name: Create Release

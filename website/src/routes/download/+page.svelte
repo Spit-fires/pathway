@@ -34,7 +34,7 @@
 			icon: Smartphone,
 			color: 'bg-primary',
 			files: [
-				{ name: 'app-debug.apk', label: 'Android APK', size: '~4 MB', direct: true }
+				{ name: 'pathway-android.apk', label: 'Android APK', size: '~4 MB' }
 			]
 		},
 		{
@@ -43,8 +43,8 @@
 			icon: Monitor,
 			color: 'bg-secondary',
 			files: [
-				{ name: 'pathway-desktop-windows-portable.exe', label: 'Portable EXE', size: '~15 MB', direct: false },
-				{ name: 'pathway-desktop-windows-nsis.exe', label: 'Installer', size: '~4 MB', direct: false }
+				{ name: 'pathway-windows-portable.exe', label: 'Portable EXE', size: '~15 MB' },
+				{ name: 'pathway-windows-setup.exe', label: 'Installer', size: '~4 MB' }
 			]
 		},
 		{
@@ -53,7 +53,7 @@
 			icon: Apple,
 			color: 'bg-accent',
 			files: [
-				{ name: 'pathway-desktop-macos-dmg.dmg', label: 'DMG Image', size: '~6 MB', direct: false }
+				{ name: 'pathway-macos.dmg', label: 'DMG Image', size: '~6 MB' }
 			]
 		},
 		{
@@ -62,8 +62,8 @@
 			icon: Monitor,
 			color: 'bg-primary',
 			files: [
-				{ name: 'pathway-desktop-linux-appimage.AppImage', label: 'AppImage', size: '~83 MB', direct: false },
-				{ name: 'pathway-desktop-linux-deb.deb', label: 'Debian Package', size: '~6 MB', direct: false }
+				{ name: 'pathway-linux.AppImage', label: 'AppImage', size: '~83 MB' },
+				{ name: 'pathway-linux.deb', label: 'Debian Package', size: '~6 MB' }
 			]
 		},
 		{
@@ -72,16 +72,13 @@
 			icon: Globe,
 			color: 'bg-secondary',
 			files: [
-				{ name: 'desktop-build.zip', label: 'Static Build', size: '~90 KB', direct: true }
+				{ name: 'pathway-web.zip', label: 'Static Build', size: '~90 KB' }
 			]
 		}
 	];
 
-	function getDownloadUrl(filename: string, direct: boolean): string {
-		if (direct) {
-			return `${GITHUB_DOWNLOAD_BASE}/${filename}`;
-		}
-		return GITHUB_RELEASE_URL;
+	function getDownloadUrl(filename: string): string {
+		return `${GITHUB_DOWNLOAD_BASE}/${filename}`;
 	}
 </script>
 
@@ -115,9 +112,7 @@
 					<div class="space-y-2">
 						{#each item.files as file}
 							<a 
-								href={getDownloadUrl(file.name, file.direct)}
-								target="_blank"
-								rel="noopener noreferrer"
+								href={getDownloadUrl(file.name)}
 								class="flex items-center justify-between p-3 bg-muted border-3 border-border hover:bg-secondary/50 transition-colors group"
 							>
 								<div class="flex items-center gap-2">

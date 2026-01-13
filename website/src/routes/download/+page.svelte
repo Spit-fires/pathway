@@ -90,40 +90,40 @@
 	<meta property="og:description" content="Download Pathway SMS gateway for free. Available for Android, Windows, macOS, and Linux." />
 </svelte:head>
 
-<section class="py-16 md:py-24" aria-labelledby="download-heading">
+<section class="py-12 sm:py-16 md:py-24" aria-labelledby="download-heading">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6">
 		<!-- Header -->
-		<header class="text-center mb-16">
-			<span class="inline-block px-4 py-2 bg-secondary border-3 border-border neo-shadow font-mono text-sm font-bold mb-6" role="status">
+		<header class="text-center mb-12 sm:mb-16">
+			<span class="inline-block px-3 sm:px-4 py-2 bg-secondary border-3 border-border neo-shadow font-mono text-xs sm:text-sm font-bold mb-6" role="status">
 				{latestVersion.toUpperCase()} • FREE & OPEN SOURCE
 			</span>
-			<h1 id="download-heading" class="text-4xl md:text-5xl font-bold mb-4">Download Pathway</h1>
-			<p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+			<h1 id="download-heading" class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 break-words">Download Pathway</h1>
+			<p class="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
 				Get the Android gateway app and desktop dashboard for your platform. All apps are free and open source.
 			</p>
 		</header>
 
 		<!-- Download Cards -->
-		<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
 			{#each downloads as item}
-				<div class="download-card opacity-0 neo-card p-6 flex flex-col">
-					<div class="{item.color} w-12 h-12 flex items-center justify-center border-3 border-border neo-shadow mb-4">
-						<item.icon class="w-6 h-6 {item.color === 'bg-secondary' ? 'text-secondary-foreground' : item.color === 'bg-accent' ? 'text-accent-foreground' : 'text-primary-foreground'}" />
+				<div class="download-card opacity-0 neo-card p-4 sm:p-6 flex flex-col">
+					<div class="{item.color} w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center border-3 border-border neo-shadow mb-4">
+						<item.icon class="w-5 h-5 sm:w-6 sm:h-6 {item.color === 'bg-secondary' ? 'text-secondary-foreground' : item.color === 'bg-accent' ? 'text-accent-foreground' : 'text-primary-foreground'}" />
 					</div>
-					<h3 class="text-xl font-bold mb-2">{item.title}</h3>
-					<p class="text-muted-foreground mb-6 flex-1">{item.description}</p>
+					<h3 class="text-lg sm:text-xl font-bold mb-2">{item.title}</h3>
+					<p class="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 flex-1">{item.description}</p>
 					
 					<div class="space-y-2">
 						{#each item.files as file}
 							<a 
 								href={getDownloadUrl(file.name)}
-								class="flex items-center justify-between p-3 bg-muted border-3 border-border hover:bg-secondary/50 transition-colors group"
+								class="flex items-center justify-between p-2 sm:p-3 bg-muted border-3 border-border hover:bg-secondary/50 transition-colors group"
 							>
-								<div class="flex items-center gap-2">
-									<Download class="w-4 h-4 text-primary" />
-									<span class="font-medium">{file.label}</span>
+								<div class="flex items-center gap-2 min-w-0">
+									<Download class="w-4 h-4 text-primary shrink-0" />
+									<span class="font-medium text-sm sm:text-base truncate">{file.label}</span>
 								</div>
-								<span class="text-sm text-muted-foreground font-mono">{file.size}</span>
+								<span class="text-xs sm:text-sm text-muted-foreground font-mono shrink-0 ml-2">{file.size}</span>
 							</a>
 						{/each}
 					</div>
@@ -137,10 +137,10 @@
 				href={GITHUB_RELEASE_URL}
 				target="_blank"
 				rel="noopener noreferrer"
-				class="neo-btn inline-flex items-center gap-2 px-8 py-4 bg-foreground text-background font-bold text-lg"
+				class="neo-btn inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-foreground text-background font-bold text-base sm:text-lg"
 			>
-				View All Releases on GitHub
-				<ExternalLink class="w-5 h-5" />
+				<span class="truncate">View All Releases on GitHub</span>
+				<ExternalLink class="w-5 h-5 shrink-0" />
 			</a>
 		</div>
 	</div>

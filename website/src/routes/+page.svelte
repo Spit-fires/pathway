@@ -134,12 +134,12 @@
 			<!-- Left: Text Content -->
 			<article class="space-y-8">
 				<header class="hero-title opacity-0">
-					<span class="inline-block px-4 py-2 bg-secondary border-3 border-border neo-shadow font-mono text-sm font-bold mb-6" role="status">
+					<span class="inline-block px-4 py-2 bg-secondary border-3 border-border neo-shadow font-mono text-xs sm:text-sm font-bold mb-6" role="status">
 						{latestVersion.toUpperCase()} NOW AVAILABLE
 					</span>
-					<h1 id="hero-heading" class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+					<h1 id="hero-heading" class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight break-words">
 						Self-Hosted
-						<span class="text-primary"> SMS Gateway</span>
+						<span class="text-primary block sm:inline"> SMS Gateway</span>
 					</h1>
 				</header>
 
@@ -147,21 +147,21 @@
 					Transform your Android device into a powerful local API server for SMS and USSD operations. No cloud, no subscriptions.
 				</p>
 
-				<nav class="hero-buttons opacity-0 flex flex-wrap gap-4" aria-label="Primary actions">
-					<a href="{base}/download" class="neo-btn px-8 py-4 bg-primary text-primary-foreground font-bold text-lg flex items-center gap-2">
+				<nav class="hero-buttons opacity-0 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4" aria-label="Primary actions">
+					<a href="{base}/download" class="neo-btn px-6 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground font-bold text-base sm:text-lg flex items-center justify-center gap-2">
 						Download Now
 						<ArrowRight class="w-5 h-5" aria-hidden="true" />
 					</a>
-					<a href="{base}/guide" class="neo-btn px-8 py-4 bg-background font-bold text-lg">
+					<a href="{base}/guide" class="neo-btn px-6 sm:px-8 py-3 sm:py-4 bg-background font-bold text-base sm:text-lg text-center">
 						Read the Guide
 					</a>
 				</nav>
 
-				<ul class="hero-subtitle opacity-0 grid grid-cols-2 gap-3 pt-4" aria-label="Key benefits">
+				<ul class="hero-subtitle opacity-0 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-4" aria-label="Key benefits">
 					{#each highlights as item}
-						<li class="flex items-center gap-2 text-sm font-medium">
-							<CheckCircle class="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
-							{item}
+						<li class="flex items-center gap-2 text-xs sm:text-sm font-medium">
+							<CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" aria-hidden="true" />
+							<span class="break-words">{item}</span>
 						</li>
 					{/each}
 				</ul>
@@ -169,31 +169,31 @@
 
 			<!-- Right: Visual -->
 			<aside class="hero-image opacity-0 relative" aria-label="API example">
-				<figure class="neo-card p-6 md:p-8">
+				<figure class="neo-card p-4 sm:p-6 md:p-8 overflow-hidden">
 					<!-- Mock Phone/Desktop UI -->
 					<div class="space-y-4">
-						<div class="flex items-center gap-3 pb-4 border-b-3 border-border" aria-hidden="true">
-							<div class="w-3 h-3 rounded-full bg-primary"></div>
-							<div class="w-3 h-3 rounded-full bg-secondary"></div>
-							<div class="w-3 h-3 rounded-full bg-accent"></div>
-							<span class="font-mono text-sm ml-2">pathway-gateway</span>
+						<div class="flex items-center gap-2 sm:gap-3 pb-4 border-b-3 border-border" aria-hidden="true">
+							<div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-primary shrink-0"></div>
+							<div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-secondary shrink-0"></div>
+							<div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-accent shrink-0"></div>
+							<span class="font-mono text-xs sm:text-sm ml-1 sm:ml-2 truncate">pathway-gateway</span>
 						</div>
 
-						<pre class="font-mono text-sm space-y-2" aria-label="Example API request"><code><span class="text-muted-foreground"># Send SMS via API</span>
+						<pre class="font-mono text-xs sm:text-sm space-y-2 overflow-x-auto" aria-label="Example API request"><code class="whitespace-pre-wrap break-all sm:break-normal sm:whitespace-pre"><span class="text-muted-foreground"># Send SMS via API</span>
 <span class="text-primary">curl</span> -X POST http://192.168.1.100:8080/sms \
     -H "Authorization: Bearer YOUR_KEY" \
     -d '{`{"number": "+1234567890", "message": "Hello!"}`}'</code></pre>
 
-						<div class="mt-6 p-4 bg-muted border-3 border-border">
-							<code class="font-mono text-sm text-primary">{"{"}"status": "sent"{"}"}</code>
+						<div class="mt-4 sm:mt-6 p-3 sm:p-4 bg-muted border-3 border-border">
+							<code class="font-mono text-xs sm:text-sm text-primary">{"{"}"status": "sent"{"}"}</code>
 						</div>
 					</div>
 					<figcaption class="sr-only">Example curl command to send SMS via the Pathway API</figcaption>
 				</figure>
 
-				<!-- Decorative elements -->
-				<div class="absolute -top-4 -right-4 w-24 h-24 bg-secondary border-3 border-border -z-10" aria-hidden="true"></div>
-				<div class="absolute -bottom-4 -left-4 w-16 h-16 bg-primary border-3 border-border -z-10" aria-hidden="true"></div>
+				<!-- Decorative elements - hidden on mobile to prevent overflow -->
+				<div class="absolute -top-4 -right-4 w-16 h-16 sm:w-24 sm:h-24 bg-secondary border-3 border-border -z-10 hidden sm:block" aria-hidden="true"></div>
+				<div class="absolute -bottom-4 -left-4 w-12 h-12 sm:w-16 sm:h-16 bg-primary border-3 border-border -z-10 hidden sm:block" aria-hidden="true"></div>
 			</aside>
 		</div>
 	</div>
@@ -224,21 +224,21 @@
 </section>
 
 <!-- CTA Section -->
-<section class="py-16 md:py-24" aria-labelledby="cta-heading">
+<section class="py-12 sm:py-16 md:py-24" aria-labelledby="cta-heading">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6">
-		<aside class="cta-primary p-8 md:p-12 text-center border-3 border-border neo-shadow-lg">
-			<h2 id="cta-heading" class="text-3xl md:text-4xl font-bold mb-4">
+		<aside class="cta-primary p-6 sm:p-8 md:p-12 text-center border-3 border-border neo-shadow-lg">
+			<h2 id="cta-heading" class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
 				Ready to Get Started?
 			</h2>
-			<p class="text-lg mb-8 max-w-2xl mx-auto">
+			<p class="text-base sm:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto">
 				Download the apps, set up your gateway in minutes, and start sending SMS through your own infrastructure.
 			</p>
-			<nav class="flex flex-wrap justify-center gap-4" aria-label="Call to action">
-				<a href="{base}/download" class="neo-btn px-8 py-4 bg-background text-foreground font-bold text-lg">
+			<nav class="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4" aria-label="Call to action">
+				<a href="{base}/download" class="neo-btn px-6 sm:px-8 py-3 sm:py-4 bg-background text-foreground font-bold text-base sm:text-lg flex items-center justify-center">
 					Download Apps
-					<ArrowRight class="w-5 h-5 inline ml-2" aria-hidden="true" />
+					<ArrowRight class="w-5 h-5 ml-2" aria-hidden="true" />
 				</a>
-				<a href="https://github.com/Spit-fires/pathway" target="_blank" rel="noopener noreferrer" class="neo-btn px-8 py-4 bg-foreground text-background font-bold text-lg">
+				<a href="https://github.com/Spit-fires/pathway" target="_blank" rel="noopener noreferrer" class="neo-btn px-6 sm:px-8 py-3 sm:py-4 bg-foreground text-background font-bold text-base sm:text-lg text-center">
 					View Source
 				</a>
 			</nav>

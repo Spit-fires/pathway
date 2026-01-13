@@ -68,7 +68,7 @@
 <!-- Skip to main content link for accessibility -->
 <a href="#main-content" class="skip-link">Skip to main content</a>
 
-<div class="min-h-screen bg-background text-foreground flex flex-col font-sans">
+<div class="min-h-screen bg-background text-foreground flex flex-col font-sans overflow-x-hidden">
 	<!-- Header -->
 	<header class="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b-3 border-border">
 		<div class="max-w-6xl mx-auto px-4 sm:px-6 py-4">

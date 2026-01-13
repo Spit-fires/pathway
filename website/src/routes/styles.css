@@ -1,0 +1,115 @@
+@import 'tailwindcss';
+
+:root {
+	--background: #fffef9;
+	--foreground: #1a1a1a;
+	--primary: #ff5f1f;
+	--primary-foreground: #ffffff;
+	--secondary: #fef08a;
+	--secondary-foreground: #1a1a1a;
+	--accent: #6366f1;
+	--accent-foreground: #ffffff;
+	--muted: #f5f5f4;
+	--muted-foreground: #737373;
+	--border: #1a1a1a;
+	--card: #ffffff;
+	--card-foreground: #1a1a1a;
+	--font-sans: 'DM Sans', sans-serif;
+	--font-mono: 'Space Mono', monospace;
+}
+
+.dark {
+	--background: #0a0a0a;
+	--foreground: #fafafa;
+	--primary: #ff7f3f;
+	--primary-foreground: #0a0a0a;
+	--secondary: #facc15;
+	--secondary-foreground: #0a0a0a;
+	--accent: #818cf8;
+	--accent-foreground: #0a0a0a;
+	--muted: #262626;
+	--muted-foreground: #a3a3a3;
+	--border: #fafafa;
+	--card: #171717;
+	--card-foreground: #fafafa;
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-border: var(--border);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--font-sans: var(--font-sans);
+	--font-mono: var(--font-mono);
+}
+
+@layer base {
+	* {
+		border-color: var(--border);
+	}
+	html {
+		scroll-behavior: smooth;
+	}
+	body {
+		font-family: var(--font-sans);
+		background-color: var(--background);
+		color: var(--foreground);
+	}
+}
+
+/* Neo Brutalism Styles */
+.neo-shadow {
+	box-shadow: 4px 4px 0 0 var(--border);
+}
+
+.neo-shadow-lg {
+	box-shadow: 6px 6px 0 0 var(--border);
+}
+
+.neo-shadow-hover:hover {
+	box-shadow: 6px 6px 0 0 var(--border);
+	transform: translate(-2px, -2px);
+}
+
+.neo-btn {
+	border: 3px solid var(--border);
+	box-shadow: 4px 4px 0 0 var(--border);
+	transition: all 0.15s ease;
+}
+
+.neo-btn:hover {
+	box-shadow: 6px 6px 0 0 var(--border);
+	transform: translate(-2px, -2px);
+}
+
+.neo-btn:active {
+	box-shadow: 2px 2px 0 0 var(--border);
+	transform: translate(2px, 2px);
+}
+
+.neo-card {
+	border: 3px solid var(--border);
+	box-shadow: 6px 6px 0 0 var(--border);
+	background-color: var(--card);
+}
+
+.neo-link {
+	text-decoration: underline;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 4px;
+	transition: all 0.15s ease;
+}
+
+.neo-link:hover {
+	text-decoration-color: var(--primary);
+	color: var(--primary);
+}
